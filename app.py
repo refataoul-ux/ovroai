@@ -2,7 +2,7 @@ import streamlit as st
 from google import genai
 
 # এখানে আপনার আসল API Key টি বসান
-API_KEY = "AIzaSyDKJ5NefPlfFA6-gTnJ-IFEJMxFgjRiV0g"
+API_KEY = "AIzaSyAJRjN0fEuEkidYfr8dWCFtKyapqcfG6K0"
 
 # জেমিনি ক্লায়েন্ট সেটআপ
 client = genai.Client(api_key=API_KEY)
