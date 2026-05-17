@@ -7,12 +7,13 @@ st.set_page_config(
     page_title="OvroAI - Global Assistant", 
     page_icon="🌐", 
     layout="wide",
-    initial_sidebar_state="expanded"  # এই কমান্ডটি সাইডবারকে সবসময় ওপেন রাখবে
+    initial_sidebar_state="expanded"
 )
 
-# ব্র্যান্ডিং ও বাড়তি বাটন লুকিয়ে ফেলার সেফ কোড (যা স্ক্রিন ভাঙবে না)
+# সাইডবার ক্লোজ করার বোতাম চিরতরে গায়েব এবং স্ক্রিন সুন্দর রাখার ম্যাজিক কোড
 st.markdown("""
     <style>
+    /* ব্র্যান্ডিং ও বাড়তি বাটন হাইড করা */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
@@ -24,6 +25,20 @@ st.markdown("""
     button[title="View app viewer form"] {display: none !important;}
     div[data-testid="stDecoration"] {display: none !important;}
     div[style*="position: fixed"][style*="bottom:"] {display: none !important;}
+    
+    /* 📌 সাইডবার বন্ধ করার তীর চিহ্ন (Arrow) বা বোতামটি চিরতরে ডিলিট করার কোড */
+    [data-testid="stSidebarCollapsedControl"], 
+    button[title="Collapse sidebar"], 
+    button[aria-label="Collapse sidebar"] {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
+    /* সাইডবার যেন কোনোভাবেই নিজে থেকে বন্ধ না হতে পারে */
+    section[data-testid="stSidebar"] {
+        min-width: 260px !important;
+        max-width: 260px !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
