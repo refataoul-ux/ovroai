@@ -2,11 +2,12 @@ import streamlit as st
 from google import genai
 from google.genai import types
 
-# ১. গ্লোবাল অ্যাপ কনফিগারেশন (সাইডবার চিরতরে স্থায়ী এবং ব্র্যান্ডিং লুকানোর কোড)
+# ১. গ্লোবাল অ্যাপ কনফিগারেশন ও জেমিনির মতো স্থায়ী সাইডবার স্টাইল
 st.set_page_config(page_title="OvroAI - Global Assistant", page_icon="🌐", layout="wide")
 
 st.markdown("""
     <style>
+    /* ব্র্যান্ডিং ও বাড়তি বাটন পুরোপুরি হাইড করা */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
@@ -19,36 +20,44 @@ st.markdown("""
     div[data-testid="stDecoration"] {display: none !important;}
     div[style*="position: fixed"][style*="bottom:"] {display: none !important;}
     
-    /* 📌 কম্পিউটার এবং মোবাইল উভয় জায়গাতেই সাইডবারকে চিরতরে স্থায়ী (Fixed) করার মূল কোড */
-    [data-testid="stSidebar"] {
+    /* 📌 কম্পিউটার ও মোবাইল সব জায়গায় সাইডবার স্থায়ী রাখার মাস্টার কোড */
+    section[data-testid="stSidebar"] {
         left: 0 !important;
         position: fixed !important;
         display: block !important;
         visibility: visible !important;
-        width: 280px !important;
+        width: 260px !important;
+        transform: none !important;
+        transition: none !important;
         z-index: 999999 !important;
     }
     
-    /* সাইডবার বন্ধ করার তীর চিহ্নটি চিরতরে গায়েব করার কোড */
+    /* সাইডবার বন্ধ করার বোতাম সম্পূর্ণ ডিলিট করা */
     [data-testid="stSidebarCollapsedControl"], button[title="Collapse sidebar"] {
         display: none !important;
         visibility: hidden !important;
     }
     
-    /* মূল চ্যাট স্ক্রিনটি যেন সাইডবারের নিচে চাপা না পড়ে, তার জন্য জায়গা ছেড়ে দেওয়া */
+    /* মূল চ্যাট স্ক্রিনটি যেন সাইডবারের ডান পাশে সুন্দরভাবে জায়গা পায় */
     .main .block-container {
-        margin-left: 290px !important;
+        margin-left: 280px !important;
         padding-left: 20px !important;
+        max-width: calc(100% - 290px) !important;
     }
     
-    /* মোবাইলের জন্য স্ক্রিন সাইজ অ্যাডজাস্টমেন্ট */
+    /* 📱 মোবাইলের জন্য স্ক্রিন সাইজ ও রেসপন্সিভনেস অ্যাডজাস্টমেন্ট */
     @media (max-width: 768px) {
-        [data-testid="stSidebar"] {
-            width: 200px !important;
+        section[data-testid="stSidebar"] {
+            width: 180px !important;
         }
         .main .block-container {
-            margin-left: 210px !important;
+            margin-left: 190px !important;
             padding-left: 10px !important;
+            max-width: calc(100% - 195px) !important;
+        }
+        /* মোবাইলে লেখাগুলো যেন অতিরিক্ত বড় না দেখায় */
+        .main h1 {
+            font-size: 20px !important;
         }
     }
     </style>
@@ -83,7 +92,7 @@ if "user_status" not in st.session_state:
 if "username" not in st.session_state:
     st.session_state.username = ""
 
-# সাইডবারে ইউজার প্রোফাইল ও প্রিমিয়াম প্ল্যান শো করা
+# সাইডবারে ইউজার প্রোфাইল ও প্রিমিয়াম প্ল্যান শো করা
 with st.sidebar:
     st.image("https://img.icons8.com/clouds/100/000000/user-male-circle.png", width=70)
     
@@ -92,7 +101,7 @@ with st.sidebar:
         tab1, tab2 = st.tabs(["Sign In", "Sign Up"])
         
         with tab1:
-            login_user = st.text_input("Username/Email:", key="login_u")
+            login_user = st.text_input("Username:", key="login_u")
             login_pass = st.text_input("Password:", type="password", key="login_p")
             if st.button("Log In", use_container_width=True):
                 if login_user and login_pass:
@@ -106,23 +115,20 @@ with st.sidebar:
             reg_pass = st.text_input("Choose Password:", type="password", key="reg_p")
             if st.button("Create Account", use_container_width=True):
                 if reg_user and reg_email and reg_pass:
-                    st.success("Account Created Successfully! Please Sign In.")
+                    st.success("Account Created! Please Sign In.")
                     
     else:
         st.write(f"Welcome, **{st.session_state.username}** 👋")
         
-        # প্রিমিয়াম সাবস্ক্রিপশন সেকশন
         if st.session_state.user_status == "free_user":
-            st.info("💡 You are using OvroAI Free Version.")
-            st.markdown("### ⭐ Upgrade to OvroAI Premium")
-            st.write("Unlock 10x Faster Speed, Advanced Coding Models & Priority Support.")
+            st.info("💡 OvroAI Free Version.")
+            st.markdown("### ⭐ Upgrade to Premium")
             if st.button("👑 Get Premium ($9.99/mo)", use_container_width=True):
                 st.session_state.user_status = "premium_user"
-                st.success("Congratulations! You are now a Premium Member! 🎉")
+                st.success("You are a Premium Member! 🎉")
                 st.rerun()
         elif st.session_state.user_status == "premium_user":
             st.success("👑 OvroAI Premium Active")
-            st.caption("Access Level: Unlimited Global Power")
             
         if st.button("Log Out", use_container_width=True):
             st.session_state.user_status = "guest"
@@ -137,11 +143,10 @@ if st.session_state.user_status == "guest":
     st.warning("⚠️ Please Sign Up or Log In from the sidebar to start chatting with OvroAI.")
     st.stop()
 
-# 六. চ্যাট মেমোরি বা হিস্ট্রি ম্যানেজমেন্ট
+# ৬. চ্যাট মেমোরি বা হিস্ট্রি ম্যানেজমেন্ট
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# আগের চ্যাটগুলো স্ক্রিনে দেখানো
 for role, text in st.session_state.chat_history:
     with st.chat_message(role):
         st.markdown(text)
@@ -155,7 +160,6 @@ if prompt := st.chat_input("Ask OvroAI anything (Any language)..."):
         try:
             user_question = prompt.strip().lower()
             
-            # মেকার সংক্রান্ত প্রশ্নের কাস্টম ইনস্ট্যান্ট উত্তর
             if any(x in user_question for x in ["who created you", "who developed you", "creator", "developer", "কে তৈরি করেছে", "মেকার কে"]):
                 reply_text = "I was developed by the talented developer **Refat Aoul** from Satkhira, Bangladesh. He built me to assist and empower people all around the globe! 🚀"
                 if "কে" in user_question or "তৈরি" in user_question:
@@ -164,7 +168,6 @@ if prompt := st.chat_input("Ask OvroAI anything (Any language)..."):
                 st.session_state.chat_history.append(("assistant", reply_text))
             
             else:
-                # মেমোরিসহ জেমিনির কাছে পাঠানোর জন্য হিস্ট্রি ফরম্যাট করা
                 formatted_contents = []
                 for role, text in st.session_state.chat_history:
                     api_role = "user" if role == "user" else "model"
@@ -173,7 +176,6 @@ if prompt := st.chat_input("Ask OvroAI anything (Any language)..."):
                         parts=[types.Part.from_text(text=text)]
                     ))
                 
-                # সিস্টেম ইন্সট্রাকশন ও ফুল মেমোরিসহ জেমিনিকে কল করা
                 response = client.models.generate_content(
                     model='gemini-2.5-flash',
                     contents=formatted_contents,
