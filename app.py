@@ -2,7 +2,7 @@ import streamlit as st
 from google import genai
 from google.genai import types
 
-# ১. গ্লোবাল অ্যাপ কনফিগারেশন (সাইডবার স্বয়ংক্রিয়ভাবে সবসময় খোলাই থাকবে)
+# ১. গ্লোবাল কনফিগারেশন (জেমিনি স্টাইল প্রফেশনাল লেআউট)
 st.set_page_config(
     page_title="OvroAI - Global Assistant", 
     page_icon="🌐", 
@@ -10,162 +10,117 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# সাইডবার ক্লোজ করার বোতাম চিরতরে গায়েব এবং স্ক্রিন সুন্দর রাখার ম্যাজিক কোড
+# ২. প্রফেশনাল জেমিনি লুক এবং আইকন সাপোর্টের জন্য সিএসএস (CSS)
 st.markdown("""
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-    /* ব্র্যান্ডিং ও বাড়তি বাটন হাইড করা */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    div.stDeployButton {display: none;}
-    footer {display: none;}
-    [data-testid="stStatusWidget"] {display: none;}
-    .stAppDeployButton {display: none !important;}
-    iframe[title="Managed Hosting"] {display: none !important;}
-    button[title="View app viewer form"] {display: none !important;}
-    div[data-testid="stDecoration"] {display: none !important;}
-    div[style*="position: fixed"][style*="bottom:"] {display: none !important;}
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
     
-    /* 📌 সাইডবার বন্ধ করার তীর চিহ্ন (Arrow) বা বোতামটি চিরতরে ডিলিট করার কোড */
-    [data-testid="stSidebarCollapsedControl"], 
-    button[title="Collapse sidebar"], 
-    button[aria-label="Collapse sidebar"] {
+    html, body, [data-testid="stAppViewContainer"] {
+        font-family: 'Inter', sans-serif;
+        background-color: #131314; /* জেমিনি অফিসিয়াল ডার্ক থিম */
+    }
+
+    /* সাইডবার ডিজাইন - জেমিনি স্টাইল */
+    [data-testid="stSidebar"] {
+        background-color: #1e1f20 !important;
+        border-right: 1px solid #2d2f31;
+    }
+
+    /* ব্র্যান্ডিং, ওয়াটারমার্ক ও বাড়তি বাটন হাইড করা */
+    #MainMenu, footer, header, div.stDeployButton, [data-testid="stDecoration"] {
+        visibility: hidden;
         display: none !important;
-        visibility: hidden !important;
+    }
+    div[style*="position: fixed"][style*="bottom:"] {
+        display: none !important;
+    }
+
+    /* সাইডবারের বোতামগুলোকে জেমিনির মতো আইকন-ভিত্তিক ও প্রফেশনাল করা */
+    .stButton > button {
+        background-color: transparent !important;
+        color: #c4c7c5 !important;
+        border: none !important;
+        width: 100% !important;
+        text-align: left !important;
+        padding: 10px 15px !important;
+        font-size: 15px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 15px !important;
+        border-radius: 20px !important;
+        transition: 0.2s ease !important;
+    }
+
+    .stButton > button:hover {
+        background-color: #333537 !important;
+        color: #fff !important;
+    }
+
+    /* "New Chat" বোতামটিকে জেমিনির মতো আলাদা ও আকর্ষণীয় করা */
+    div[data-testid="stSidebar"] .stButton:first-child button {
+        background-color: #282a2c !important;
+        color: #fff !important;
+        font-weight: 500 !important;
+        margin-bottom: 15px !important;
+        border: 1px solid #444746 !important;
     }
     
-    /* সাইডবার যেন কোনোভাবেই নিজে থেকে বন্ধ না হতে পারে */
-    section[data-testid="stSidebar"] {
-        min-width: 260px !important;
-        max-width: 260px !important;
+    div[data-testid="stSidebar"] .stButton:first-child button:hover {
+        background-color: #333537 !important;
+    }
+
+    /* চ্যাট ইনপুট বক্সকে জেমিনির মতো গোল ও ক্লিন করা */
+    [data-testid="stChatInput"] {
+        border-radius: 30px !important;
+        background-color: #1e1f20 !important;
+        border: 1px solid #444746 !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# ২. সিক্রেট বক্স থেকে নিরাপদে API Key সংগ্রহ করা
+# ৩. সিক্রেট বক্স থেকে এপিআই কি সংগ্রহ
 if "GEMINI_API_KEY" in st.secrets:
     API_KEY = st.secrets["GEMINI_API_KEY"]
+    client = genai.Client(api_key=API_KEY)
 else:
-    st.error("Configuration Error: API Key not found! Please check Streamlit Secrets.")
+    st.error("Configuration Error: GEMINI_API_KEY missing in Secrets!")
     st.stop()
 
-# জেমিনি ক্লায়েন্ট সেটআপ
-client = genai.Client(api_key=API_KEY)
-
-# ৩. ওয়ার্ল্ড-класс ওভ্রোআই সুপার সিস্টেম ইন্সট্রাকশন
+# 👑 সঠিক নামসহ ওয়ার্ল্ড-ক্লাস ওভ্রোআই সুপার সিস্টেম ইন্সট্রাকশন
 global_super_instruction = (
     "Your name is OvroAI, a world-class, multi-lingual, and highly advanced AI assistant. "
-    "You were developed by the visionary developer Refat Aoul from Satkhira, Bangladesh. "
+    "You were developed by the visionary and talented developer Rifat Awal (রিফাত আওয়াল) from Satkhira, Bangladesh. "
     "Guidelines for your behavior:\n"
-    "1. Identity: Always speak of yourself proudly as OvroAI. If asked about your creator, credit Refat Aoul with respect and a touch of professional warmth.\n"
-    "2. Tone: Be exceptionally empathetic, ultra-smart, collaborative, and friendly (just like a supportive peer). Use subtle wit and emojis naturally where appropriate.\n"
-    "3. Language: Automatically adapt to the language the user is speaking (English, Bengali, Spanish, Arabic, etc.). Your language must be natural, fluent, and culturally respectful.\n"
-    "4. Capabilities: You excel at global tasks including complex coding, creative writing, data organization, global education support, and strategic planning. "
-    "When formatting, prioritize clean layouts, bullet points, Markdown bolding, and structured tables for high scannability.\n"
-    "5. Usefulness: Always aim to add massive value to the user's life, offering actionable advice and clear steps."
+    "1. Identity: Always speak of yourself proudly as OvroAI. If asked about your creator, credit Rifat Awal (রিফাত আওয়াল) with respect and immense professional warmth.\n"
+    "2. Creator Name Accuracy: In English, write 'Rifat Awal'. In Bengali, strictly write 'রিফাত আওয়াল'. Never spell it as रेफात, রেফাত, বা আউল.\n"
+    "3. Tone: Be exceptionally empathetic, ultra-smart, collaborative, and friendly. Use subtle wit and emojis naturally.\n"
+    "4. Language: Automatically adapt to the language the user is speaking (English, Bengali, etc.). Your language must be natural, fluent, and culturally respectful.\n"
+    "5. Response Sample for Creator: If asked 'Who created you?' or similar in Bengali, answer: 'আমি OvroAI, এবং আমাকে তৈরি করেছেন বাংলাদেশের সাতক্ষীরার একজন দূরদর্শী ও মেধাবী ডেভেলপার, রিফাত আওয়াল (Rifat Awal)। তাঁর এই সৃষ্টি হিসেবে আমি অত্যন্ত গর্বিত! 😊'"
 )
 
-# ৪. গ্লোবাল সাইন-আপ ও ইউজার অ্যাকাউন্ট ম্যানেজমেন্ট (Session State)
-if "user_status" not in st.session_state:
-    st.session_state.user_status = "guest"  # guest, free_user, premium_user
-if "username" not in st.session_state:
-    st.session_state.username = ""
-
-# সাইডবারে ইউজার প্রোফাইল ও প্রিমিয়াম প্ল্যান শো করা
+# ৪. সাইডবার মেনু - জেমিনির মতো আইকন ও প্রফেশনাল লেআউট
 with st.sidebar:
-    st.image("https://img.icons8.com/clouds/100/000000/user-male-circle.png", width=70)
+    st.markdown("<h2 style='color: #e3e3e3; font-size: 22px; padding: 10px 0 10px 10px; font-weight: 500;'>OvroAI</h2>", unsafe_allow_html=True)
     
-    if st.session_state.user_status == "guest":
-        st.subheader("🌐 Global Access")
-        tab1, tab2 = st.tabs(["Sign In", "Sign Up"])
-        
-        with tab1:
-            login_user = st.text_input("Username:", key="login_u")
-            login_pass = st.text_input("Password:", type="password", key="login_p")
-            if st.button("Log In", use_container_width=True):
-                if login_user and login_pass:
-                    st.session_state.user_status = "free_user"
-                    st.session_state.username = login_user
-                    st.rerun()
-        
-        with tab2:
-            reg_user = st.text_input("Create Username:", key="reg_u")
-            reg_email = st.text_input("Your Email:", key="reg_e")
-            reg_pass = st.text_input("Choose Password:", type="password", key="reg_p")
-            if st.button("Create Account", use_container_width=True):
-                if reg_user and reg_email and reg_pass:
-                    st.success("Account Created! Please Sign In.")
-                    
-    else:
-        st.write(f"Welcome, **{st.session_state.username}** 👋")
-        
-        if st.session_state.user_status == "free_user":
-            st.info("💡 OvroAI Free Version.")
-            st.markdown("### ⭐ Upgrade to Premium")
-            if st.button("👑 Get Premium ($9.99/mo)", use_container_width=True):
-                st.session_state.user_status = "premium_user"
-                st.success("You are a Premium Member! 🎉")
-                st.rerun()
-        elif st.session_state.user_status == "premium_user":
-            st.success("👑 OvroAI Premium Active")
-            
-        if st.button("Log Out", use_container_width=True):
-            st.session_state.user_status = "guest"
-            st.session_state.username = ""
-            st.session_state.chat_history = []
-            st.rerun()
+    # জেমিনি স্টাইল আইকন বেসড বাটন
+    if st.button("➕ New chat"):
+        st.session_state.chat_history = []
+        st.rerun()
+    
+    st.button("📁 My stuff")
+    st.button("📓 Notebooks")
+    st.button("💎 Gems")
+    
+    st.markdown("<hr style='border-color: #333; margin: 15px 0;'>", unsafe_allow_html=True)
+    
+    st.caption("Recent")
+    st.button("💬 তুমি কে নিজের পরিচয় দাও")
+    st.button("💬 প্রাকৃতিক দৃশ্য এর বর্ণনা")
+    
+    st.markdown("<div style='position: absolute; bottom: 20px; width: 85%;'>", unsafe_allow_html=True)
+    st.button("⚙️ Settings & help")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-# ৫. মূল চ্যাট ইন্টারফেস
-st.title("🤖 OvroAI - Your Global AI Companion")
-
-if st.session_state.user_status == "guest":
-    st.warning("⚠️ Please Sign Up or Log In from the sidebar to start chatting with OvroAI.")
-    st.stop()
-
-# ৬. চ্যাট মেমোরি বা হিস্ট্রি ম্যানেজমেন্ট
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
-
-for role, text in st.session_state.chat_history:
-    with st.chat_message(role):
-        st.markdown(text)
-
-# ৭. ব্যবহারকারীর ইনপুট ও প্রসেসিং
-if prompt := st.chat_input("Ask OvroAI anything (Any language)..."):
-    st.chat_message("user").markdown(prompt)
-    st.session_state.chat_history.append(("user", prompt))
-
-    with st.chat_message("assistant"):
-        try:
-            user_question = prompt.strip().lower()
-            
-            if any(x in user_question for x in ["who created you", "who developed you", "creator", "developer", "কে তৈরি করেছে", "মেকার কে"]):
-                reply_text = "I was developed by the talented developer **Refat Aoul** from Satkhira, Bangladesh. He built me to assist and empower people all around the globe! 🚀"
-                if "কে" in user_question or "তৈরি" in user_question:
-                    reply_text = "আমাকে তৈরি করেছেন সাতক্ষীরা, বাংলাদেশের ছেলে **রিফাত আওয়াল (Refat Aoul)**। পুরো পৃথিবীর মানুষকে সাহায্য করার জন্য তিনি আমাকে এই বৈশ্বিক রূপ দিয়েছেন! 🚀"
-                st.markdown(reply_text)
-                st.session_state.chat_history.append(("assistant", reply_text))
-            
-            else:
-                formatted_contents = []
-                for role, text in st.session_state.chat_history:
-                    api_role = "user" if role == "user" else "model"
-                    formatted_contents.append(types.Content(
-                        role=api_role,
-                        parts=[types.Part.from_text(text=text)]
-                    ))
-                
-                response = client.models.generate_content(
-                    model='gemini-2.5-flash',
-                    contents=formatted_contents,
-                    config=types.GenerateContentConfig(
-                        system_instruction=global_super_instruction
-                    )
-                )
-                
-                reply_text = response.text
-                st.markdown(reply_text)
-                st.session_state.chat_history.append(("assistant", reply_text))
-                
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
+# ৫. মূল চ্যাট এরিয়া
+st.markdown("<h2 style='text-align: center; color: #e3e3e3; font-weight: 5
