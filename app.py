@@ -2,12 +2,17 @@ import streamlit as st
 from google import genai
 from google.genai import types
 
-# ১. গ্লোবাল অ্যাপ কনফিগারেশন ও জেমিনির মতো স্থায়ী সাইডবার স্টাইল
-st.set_page_config(page_title="OvroAI - Global Assistant", page_icon="🌐", layout="wide")
+# ১. গ্লোবাল অ্যাপ কনফিগারেশন (সাইডবার স্বয়ংক্রিয়ভাবে সবসময় খোলাই থাকবে)
+st.set_page_config(
+    page_title="OvroAI - Global Assistant", 
+    page_icon="🌐", 
+    layout="wide",
+    initial_sidebar_state="expanded"  # এই কমান্ডটি সাইডবারকে সবসময় ওপেন রাখবে
+)
 
+# ব্র্যান্ডিং ও বাড়তি বাটন লুকিয়ে ফেলার সেফ কোড (যা স্ক্রিন ভাঙবে না)
 st.markdown("""
     <style>
-    /* ব্র্যান্ডিং ও বাড়তি বাটন পুরোপুরি হাইড করা */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
@@ -19,47 +24,6 @@ st.markdown("""
     button[title="View app viewer form"] {display: none !important;}
     div[data-testid="stDecoration"] {display: none !important;}
     div[style*="position: fixed"][style*="bottom:"] {display: none !important;}
-    
-    /* 📌 কম্পিউটার ও মোবাইল সব জায়গায় সাইডবার স্থায়ী রাখার মাস্টার কোড */
-    section[data-testid="stSidebar"] {
-        left: 0 !important;
-        position: fixed !important;
-        display: block !important;
-        visibility: visible !important;
-        width: 260px !important;
-        transform: none !important;
-        transition: none !important;
-        z-index: 999999 !important;
-    }
-    
-    /* সাইডবার বন্ধ করার বোতাম সম্পূর্ণ ডিলিট করা */
-    [data-testid="stSidebarCollapsedControl"], button[title="Collapse sidebar"] {
-        display: none !important;
-        visibility: hidden !important;
-    }
-    
-    /* মূল চ্যাট স্ক্রিনটি যেন সাইডবারের ডান পাশে সুন্দরভাবে জায়গা পায় */
-    .main .block-container {
-        margin-left: 280px !important;
-        padding-left: 20px !important;
-        max-width: calc(100% - 290px) !important;
-    }
-    
-    /* 📱 মোবাইলের জন্য স্ক্রিন সাইজ ও রেসপন্সিভনেস অ্যাডজাস্টমেন্ট */
-    @media (max-width: 768px) {
-        section[data-testid="stSidebar"] {
-            width: 180px !important;
-        }
-        .main .block-container {
-            margin-left: 190px !important;
-            padding-left: 10px !important;
-            max-width: calc(100% - 195px) !important;
-        }
-        /* মোবাইলে লেখাগুলো যেন অতিরিক্ত বড় না দেখায় */
-        .main h1 {
-            font-size: 20px !important;
-        }
-    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -92,7 +56,7 @@ if "user_status" not in st.session_state:
 if "username" not in st.session_state:
     st.session_state.username = ""
 
-# সাইডবারে ইউজার প্রোфাইল ও প্রিমিয়াম প্ল্যান শো করা
+# সাইডবারে ইউজার প্রোফাইল ও প্রিমিয়াম প্ল্যান শো করা
 with st.sidebar:
     st.image("https://img.icons8.com/clouds/100/000000/user-male-circle.png", width=70)
     
