@@ -5,7 +5,7 @@ from google.genai import types
 from PIL import Image
 import io
 
-# ১. পেজ কনফিগারেশন
+# ১. পেজ কনফিগারেশন ও থিম সেটিং
 st.set_page_config(
     page_title="OvroAI - Global Assistant", 
     page_icon="🌐", 
@@ -13,9 +13,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ২. সম্পূর্ণ জেমিনি রেস্পনসিভ থিম এবং কাস্টম প্লাস মেনু (HTML/CSS)
-# এখানে unsafe_allow_html=True নিশ্চিত করা হয়েছে যাতে টেক্সট ভেসে না ওঠে
-st.markdown("""
+# ২. নিখুঁত সিএসএস ইন্টিগ্রেশন (যাতে উপরে কোনো লেখা ভেসে না ওঠে)
+st.html("""
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
@@ -30,32 +29,19 @@ st.markdown("""
         border-right: 1px solid #2d2f31 !important;
     }
     
-    #MainMenu, footer, header, div.stDeployButton, [data-testid="stDecoration"] {
+    /* স্ট্রিমলিটের সমস্ত ডিফল্ট বাটন, গিটহাব লিঙ্ক ও ফুটার চিরতরে হাইড করার আলটিমেટ ট্রিক */
+    #MainMenu, footer, header, div.stDeployButton, [data-testid="stDecoration"], [data-testid="stSendButton"]+div {
         visibility: hidden !important;
         display: none !important;
     }
 
-    /* চ্যাট ইনপুট এবং প্লাস বাটন এরিয়া */
     [data-testid="stChatInput"] {
         border-radius: 30px !important;
         background-color: #1e1f20 !important;
         border: 1px solid #444746 !important;
-        padding-left: 10px !important;
-    }
-
-    /* ফাইল আপলোডার স্টাইলিং */
-    .stFileUploader {
-        padding: 0px !important;
-        margin-top: 5px !important;
-    }
-    .stFileUploader section {
-        background-color: #1e1f20 !important;
-        border: 1px dashed #444746 !important;
-        border-radius: 15px !important;
-        padding: 8px !important;
     }
     
-    /* কাস্টম মেনু স্টাইলিং (স্ক্রিনশটের মতো সাদা ব্যাকগ্রাউন্ড বক্স) */
+    /* কাস্টম পপআপ মেনু ডিজাইন */
     .upload-popup-menu {
         background-color: #edf2f7 !important;
         border-radius: 16px;
@@ -72,19 +58,10 @@ st.markdown("""
         color: #1f2937 !important;
         font-size: 15px;
         font-weight: 500;
-        cursor: pointer;
         border-radius: 8px;
-        transition: background 0.2s;
-    }
-    .popup-item:hover {
-        background-color: #e2e8f0;
-    }
-    .popup-item i {
-        font-size: 16px;
-        color: #4b5563;
     }
     </style>
-    """, unsafe_allow_html=True)
+""")
 
 # ৩. এপিআই কি কানেকশন
 if "GEMINI_API_KEY" in st.secrets:
@@ -93,35 +70,72 @@ else:
     st.error("Secrets-এ GEMINI_API_KEY পাওয়া যায়নি!")
     st.stop()
 
-global_super_instruction = "Your name is OvroAI, developed by Rifat Awal from Satkhira, Bangladesh. Assist users warmly."
+global_super_instruction = "Your name is OvroAI, developed by Rifat Awal from Satkhira, Bangladesh. Always assist users warmly."
 
-# ৪. সাইডবার লেআউট
-with st.sidebar:
-    st.markdown("<h2 style='color: #e3e3e3; font-size: 22px; padding: 10px;'>OvroAI</h2>", unsafe_allow_html=True)
-    if st.button("➕   New chat"):
-        st.session_state.chat_history = []
-        st.session_state.active_file = None
-        st.session_state.show_menu = False
-        st.rerun()
-
-# ৫. মূল উইন্ডো টাইটেল
-st.markdown("<h2 style='text-align: center; color: #e3e3e3; font-weight: 500;'>🤖 OvroAI - Global Assistant</h2>", unsafe_allow_html=True)
-
+# ৪. সেশন স্টেট ইনিশিয়ালাইজেশন (লগইন ও চ্যাটের জন্য)
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 if "active_file" not in st.session_state:
     st.session_state.active_file = None
 if "show_menu" not in st.session_state:
     st.session_state.show_menu = False
+if "is_logged_in" not in st.session_state:
+    st.session_state.is_logged_in = False
+if "user_tier" not in st.session_state:
+    st.session_state.user_tier = "Free" # ডিফল্টভাবে সবাই ফ্রি ইউজার
+
+# ৫. সাইডবার লেআউট ও অপশনাল লগইন প্যানেল
+with st.sidebar:
+    st.markdown("<h2 style='color: #e3e3e3; font-size: 22px; padding: 10px;'>OvroAI</h2>", unsafe_allow_html=True)
+    
+    # 🔐 অপশনাল লগইন বক্স ডিজাইন
+    st.markdown("<hr style='border-color: #333;'>", unsafe_allow_html=True)
+    if not st.session_state.is_logged_in:
+        st.markdown("<p style='color: #c4c7c5; font-size: 14px;'>👤 অ্যাকাউন্ট অপশন (অপশনাল)</p>", unsafe_allow_html=True)
+        username = st.text_input("ইউজারনেম", placeholder="username", label_visibility="collapsed")
+        password = st.text_input("পাসওয়ার্ড", type="password", placeholder="password", label_visibility="collapsed")
+        
+        col_login, col_reg = st.columns(2)
+        with col_login:
+            if st.button("লগইন"):
+                if username == "rifat" and password == "1234": # ডেমো ক্রেডেনশিয়াল
+                    st.session_state.is_logged_in = True
+                    st.session_state.user_tier = "Premium"
+                    st.success("🎉 স্বাগতম রিফাত ভাই!")
+                    st.rerun()
+                elif username and password:
+                    st.session_state.is_logged_in = True
+                    st.session_state.user_tier = "Free"
+                    st.success("লগইন সফল!")
+                    st.rerun()
+        with col_reg:
+            st.button("রেজিস্ট্রেশন")
+    else:
+        # লগইন অবস্থায় যা দেখাবে
+        tier_color = "#FFD700" if st.session_state.user_tier == "Premium" else "#00FF00"
+        st.markdown(f"Status: <b style='color:{tier_color};'>{st.session_state.user_tier} User</b>", unsafe_allow_html=True)
+        if st.button("লগআউট"):
+            st.session_state.is_logged_in = False
+            st.session_state.user_tier = "Free"
+            st.rerun()
+            
+    st.markdown("<hr style='border-color: #333;'>", unsafe_allow_html=True)
+    if st.button("➕   New chat"):
+        st.session_state.chat_history = []
+        st.session_state.active_file = None
+        st.session_state.show_menu = False
+        st.rerun()
+
+# ६. মূল উইন্ডো ইন্টারফেস
+st.markdown("<h2 style='text-align: center; color: #e3e3e3; font-weight: 500;'>🤖 OvroAI - Global Assistant</h2>", unsafe_allow_html=True)
 
 # চ্যাট হিস্ট্রি ডিসপ্লে
 for role, text in st.session_state.chat_history:
     with st.chat_message(role):
         st.markdown(text)
 
-# ৬. প্লাস মেনু ও ফাইল আপলোডার সেকশন
-st.markdown("<hr style='border-color: #2d2f31; margin: 20px 0;'>", unsafe_allow_html=True)
-
+# ৭. কাস্টম প্লাস বাটন ও টুলস সেকশন
+st.markdown("<br>", unsafe_allow_html=True)
 col1, col2 = st.columns([1, 6])
 
 with col1:
@@ -140,7 +154,7 @@ if st.session_state.show_menu:
         </div>
         """, unsafe_allow_html=True)
         
-        uploaded_file = st.file_uploader("সিলেক্ট করুন:", type=["jpg", "png", "jpeg", "pdf", "txt"], label_visibility="collapsed")
+        uploaded_file = st.file_uploader("ফাইল:", type=["jpg", "png", "jpeg", "pdf", "txt"], label_visibility="collapsed")
         if uploaded_file is not None:
             st.session_state.active_file = uploaded_file
             st.session_state.show_menu = False
@@ -153,8 +167,8 @@ if st.session_state.active_file is not None:
     except:
         st.info(f"📁 ফাইল রেডি: {st.session_state.active_file.name}")
 
-# ৭. চ্যাট ইনপুট ও প্রসেসিং
-if prompt := st.chat_input("Ask OvroAI anything (Any language)..."):
+# ৮. চ্যাট ইনপুট ও প্রসেসিং
+if prompt := st.chat_input("Ask OvroAI anything..."):
     st.chat_message("user").markdown(prompt)
     st.session_state.chat_history.append(("user", prompt))
 
@@ -171,7 +185,6 @@ if prompt := st.chat_input("Ask OvroAI anything (Any language)..."):
             
             contents.append(prompt)
 
-            # জেমিনির অফিশিয়াল ২.৫ ফ্ল্যাশ মডেল ব্যবহার
             response = client.models.generate_content(
                 model='gemini-2.5-flash',
                 contents=contents,
@@ -181,7 +194,6 @@ if prompt := st.chat_input("Ask OvroAI anything (Any language)..."):
             reply_text = response.text
             st.markdown(reply_text)
             st.session_state.chat_history.append(("assistant", reply_text))
-            
             st.session_state.active_file = None
             st.rerun()
             
