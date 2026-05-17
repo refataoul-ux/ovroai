@@ -2,7 +2,7 @@ import streamlit as st
 from google import genai
 from google.genai import types
 
-# ১. গ্লোবাল কনফিগারেশন (জেমিনি স্টাইল প্রফেশনাল লেআউট)
+# ১. গ্লোবাল কনফিগারেশন (জেমিনির মতো রেস্পনসিভ লেআউট)
 st.set_page_config(
     page_title="OvroAI - Global Assistant", 
     page_icon="🌐", 
@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ২. প্রফেশনাল জেমিনি লুক এবং আইকন সাপোর্টের জন্য সিএসএস (CSS)
+# ২. প্রফেশনাল জেমিনি থিম এবং রেস্পনসিভ আইকন মেনু ডিজাইন (CSS)
 st.markdown("""
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -18,37 +18,35 @@ st.markdown("""
     
     html, body, [data-testid="stAppViewContainer"] {
         font-family: 'Inter', sans-serif;
-        background-color: #131314; /* জেমিনি অফিসিয়াল ডার্ক থিম */
+        background-color: #131314 !important; /* জেমিনি অফিশিয়াল ডার্ক ব্যাকগ্রাউন্ড */
     }
 
-    /* সাইডবার ডিজাইন - জেমিনি স্টাইল */
+    /* সাইডবার ডিজাইন */
     [data-testid="stSidebar"] {
         background-color: #1e1f20 !important;
-        border-right: 1px solid #2d2f31;
+        border-right: 1px solid #2d2f31 !important;
+        transition: width 0.3s ease !important;
     }
 
-    /* ব্র্যান্ডিং, ওয়াটারমার্ক ও বাড়তি বাটন হাইড করা */
+    /* ব্র্যান্ডিং, ওয়াটারমার্ক ও বাড়তি বোতাম হাইড করা */
     #MainMenu, footer, header, div.stDeployButton, [data-testid="stDecoration"] {
         visibility: hidden;
         display: none !important;
     }
-    div[style*="position: fixed"][style*="bottom:"] {
-        display: none !important;
-    }
 
-    /* সাইডবারের বোতামগুলোকে জেমিনির মতো আইকন-ভিত্তিক ও প্রফেশনাল করা */
+    /* বোতামগুলোকে জেমিনির মতো আইকন-ভিত্তিক করা */
     .stButton > button {
         background-color: transparent !important;
         color: #c4c7c5 !important;
         border: none !important;
         width: 100% !important;
         text-align: left !important;
-        padding: 10px 15px !important;
+        padding: 12px 15px !important;
         font-size: 15px !important;
         display: flex !important;
         align-items: center !important;
         gap: 15px !important;
-        border-radius: 20px !important;
+        border-radius: 24px !important;
         transition: 0.2s ease !important;
     }
 
@@ -57,7 +55,7 @@ st.markdown("""
         color: #fff !important;
     }
 
-    /* "New Chat" বোতামটিকে জেমিনির মতো আলাদা ও আকর্ষণীয় করা */
+    /* "New Chat" বোতামের স্পেশাল স্টাইল */
     div[data-testid="stSidebar"] .stButton:first-child button {
         background-color: #282a2c !important;
         color: #fff !important;
@@ -65,21 +63,37 @@ st.markdown("""
         margin-bottom: 15px !important;
         border: 1px solid #444746 !important;
     }
-    
-    div[data-testid="stSidebar"] .stButton:first-child button:hover {
-        background-color: #333537 !important;
-    }
 
-    /* চ্যাট ইনপুট বক্সকে জেমিনির মতো গোল ও ক্লিন করা */
+    /* ইনপুট বক্স জেমিনি স্টাইল */
     [data-testid="stChatInput"] {
         border-radius: 30px !important;
         background-color: #1e1f20 !important;
         border: 1px solid #444746 !important;
     }
+
+    /* 📱 জেমিনির মতো মোবাইল রেস্পনসিভ ট্রিক: ছোট স্ক্রিনে সাইডবার আইকন স্ট্রিপ হয়ে যাবে */
+    @media (max-width: 768px) {
+        [data-testid="stSidebar"] {
+            width: 70px !important;
+            min-width: 70px !important;
+        }
+        /* মোবাইলে বোতামের ভেতরের লেখা লুকিয়ে শুধু আইকন দেখানোর কোড */
+        .stButton > button {
+            padding: 12px 0px !important;
+            justify-content: center !important;
+            font-size: 0px !important; /* টেক্সট গায়েব */
+        }
+        .stButton > button span {
+            font-size: 18px !important; /* শুধু আইকন বা ইমোজি থাকবে */
+        }
+        div[data-testid="stSidebar"] h2 {
+            display: none !important; /* লোগো হাইড */
+        }
+    }
     </style>
     """, unsafe_allow_html=True)
 
-# ৩. সিক্রেট বক্স থেকে এপিআই কি সংগ্রহ
+# ৩. এপিআই কি সেটআপ
 if "GEMINI_API_KEY" in st.secrets:
     API_KEY = st.secrets["GEMINI_API_KEY"]
     client = genai.Client(api_key=API_KEY)
@@ -87,40 +101,87 @@ else:
     st.error("Configuration Error: GEMINI_API_KEY missing in Secrets!")
     st.stop()
 
-# 👑 সঠিক নামসহ ওয়ার্ল্ড-ক্লাস ওভ্রোআই সুপার সিস্টেম ইন্সট্রাকশন
+# 👑 সঠিক নামসহ ওভ্রোআই সুপার সিস্টেম ইন্সট্রাকশন
 global_super_instruction = (
     "Your name is OvroAI, a world-class, multi-lingual, and highly advanced AI assistant. "
     "You were developed by the visionary and talented developer Rifat Awal (রিফাত আওয়াল) from Satkhira, Bangladesh. "
     "Guidelines for your behavior:\n"
     "1. Identity: Always speak of yourself proudly as OvroAI. If asked about your creator, credit Rifat Awal (রিফাত আওয়াল) with respect and immense professional warmth.\n"
-    "2. Creator Name Accuracy: In English, write 'Rifat Awal'. In Bengali, strictly write 'রিফাত আওয়াল'. Never spell it as रेफात, রেফাত, বা আউল.\n"
-    "3. Tone: Be exceptionally empathetic, ultra-smart, collaborative, and friendly. Use subtle wit and emojis naturally.\n"
-    "4. Language: Automatically adapt to the language the user is speaking (English, Bengali, etc.). Your language must be natural, fluent, and culturally respectful.\n"
+    "2. Creator Name Accuracy: In English, write 'Rifat Awal'. In Bengali, strictly write 'রিফাত আওয়াল'. Never spell it as রেফাত or আউল.\n"
+    "3. Tone: Be exceptionally empathetic, ultra-smart, collaborative, and friendly.\n"
+    "4. Language: Automatically adapt to the language the user is speaking.\n"
     "5. Response Sample for Creator: If asked 'Who created you?' or similar in Bengali, answer: 'আমি OvroAI, এবং আমাকে তৈরি করেছেন বাংলাদেশের সাতক্ষীরার একজন দূরদর্শী ও মেধাবী ডেভেলপার, রিফাত আওয়াল (Rifat Awal)। তাঁর এই সৃষ্টি হিসেবে আমি অত্যন্ত গর্বিত! 😊'"
 )
 
-# ৪. সাইডবার মেনু - জেমিনির মতো আইকন ও প্রফেশনাল লেআউট
+# ৪. সাইডবার মেনু - জেমিনির স্ক্রিনশটের মতো নিখুঁত লেআউট
 with st.sidebar:
     st.markdown("<h2 style='color: #e3e3e3; font-size: 22px; padding: 10px 0 10px 10px; font-weight: 500;'>OvroAI</h2>", unsafe_allow_html=True)
     
-    # জেমিনি স্টাইল আইকন বেসড বাটন
-    if st.button("➕ New chat"):
+    # বোতামের টেক্সটের শুরুতে ইমোজি/আইকন স্পেস দিয়ে আলাদা করা (মোবাইল ভিউর জন্য)
+    if st.button("➕   New chat"):
         st.session_state.chat_history = []
         st.rerun()
     
-    st.button("📁 My stuff")
-    st.button("📓 Notebooks")
-    st.button("💎 Gems")
+    st.button("📁   My stuff")
+    st.button("📓   Notebooks")
+    st.button("💎   Gems")
     
     st.markdown("<hr style='border-color: #333; margin: 15px 0;'>", unsafe_allow_html=True)
     
     st.caption("Recent")
-    st.button("💬 তুমি কে নিজের পরিচয় দাও")
-    st.button("💬 প্রাকৃতিক দৃশ্য এর বর্ণনা")
+    st.button("💬   তুমি কে নিজের পরিচয় দাও")
+    st.button("💬   প্রাকৃতিক দৃশ্য এর বর্ণনা")
     
-    st.markdown("<div style='position: absolute; bottom: 20px; width: 85%;'>", unsafe_allow_html=True)
-    st.button("⚙️ Settings & help")
+    st.markdown("<div style='position: fixed; bottom: 20px; width: 240px;'>", unsafe_allow_html=True)
+    st.button("⚙️   Settings & help")
     st.markdown("</div>", unsafe_allow_html=True)
 
-# ৫. মূল চ্যাট এরিয়া
-st.markdown("<h2 style='text-align: center; color: #e3e3e3; font-weight: 5
+# ৫. মূল চ্যাট এরিয়া (এখানে ট্রিপল কোটেশন ব্যবহার করা হয়েছে এরর এড়াতে)
+st.markdown("""<h2 style="text-align: center; color: #e3e3e3; font-weight: 500; margin-top: 20px;">🤖 OvroAI - Your Global AI Companion</h2>""", unsafe_allow_html=True)
+
+# চ্যাট মেমোরি
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
+for role, text in st.session_state.chat_history:
+    with st.chat_message(role):
+        st.markdown(text)
+
+# ৬. ব্যবহারকারীর ইনপুট ও প্রসেসিং
+if prompt := st.chat_input("Ask OvroAI anything (Any language)..."):
+    st.chat_message("user").markdown(prompt)
+    st.session_state.chat_history.append(("user", prompt))
+
+    with st.chat_message("assistant"):
+        try:
+            user_question = prompt.strip().lower()
+            
+            # মেকার সংক্রান্ত প্রশ্নের কাস্টম ইনস্ট্যান্ট নির্ভুল উত্তর
+            if any(x in user_question for x in ["who created you", "who developed you", "creator", "developer", "কে তৈরি করেছে", "মেকার কে", "তৈরি"]):
+                reply_text = "আমি OvroAI, এবং আমাকে তৈরি করেছেন বাংলাদেশের সাতক্ষীরার একজন দূরদর্শী ও মেধাবী ডেভেলপার, **রিফাত আওয়াল (Rifat Awal)**। তাঁর এই সৃষ্টি হিসেবে আমি অত্যন্ত গর্বিত! 😊"
+                st.markdown(reply_text)
+                st.session_state.chat_history.append(("assistant", reply_text))
+            
+            else:
+                formatted_contents = []
+                for role, text in st.session_state.chat_history:
+                    api_role = "user" if role == "user" else "model"
+                    formatted_contents.append(types.Content(
+                        role=api_role,
+                        parts=[types.Part.from_text(text=text)]
+                    ))
+                
+                response = client.models.generate_content(
+                    model='gemini-2.5-flash',
+                    contents=formatted_contents,
+                    config=types.GenerateContentConfig(
+                        system_instruction=global_super_instruction
+                    )
+                )
+                
+                reply_text = response.text
+                st.markdown(reply_text)
+                st.session_state.chat_history.append(("assistant", reply_text))
+                
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
