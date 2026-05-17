@@ -13,7 +13,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ২. অ্যাডভান্সড সিএসএস (জেমিনি স্টাইল ইনপুট বক্স ও প্লাস মেনু পপআপ)
+# ২. সম্পূর্ণ জেমিনি রেস্পনসিভ থিম এবং কাস্টম প্লাস মেনু (HTML/CSS)
+# এখানে unsafe_allow_html=True নিশ্চিত করা হয়েছে যাতে টেক্সট ভেসে না ওঠে
 st.markdown("""
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -42,19 +43,19 @@ st.markdown("""
         padding-left: 10px !important;
     }
 
-    /* ফাইল আপলোডারের সাধারণ বক্সটিকে সুন্দর ও ছোট করা */
+    /* ফাইল আপলোডার স্টাইলিং */
     .stFileUploader {
         padding: 0px !important;
-        margin-top: 10px !important;
+        margin-top: 5px !important;
     }
     .stFileUploader section {
         background-color: #1e1f20 !important;
         border: 1px dashed #444746 !important;
         border-radius: 15px !important;
-        padding: 10px !important;
+        padding: 8px !important;
     }
     
-    /* কাস্টম মেনু স্টাইলিং (আপনার স্ক্রিনশটের মতো সাদা ব্যাকগ্রাউন্ড বক্স) */
+    /* কাস্টম মেনু স্টাইলিং (স্ক্রিনশটের মতো সাদা ব্যাকগ্রাউন্ড বক্স) */
     .upload-popup-menu {
         background-color: #edf2f7 !important;
         border-radius: 16px;
@@ -103,7 +104,7 @@ with st.sidebar:
         st.session_state.show_menu = False
         st.rerun()
 
-# ৫. মূল উইন্ডো
+# ৫. মূল উইন্ডো টাইটেল
 st.markdown("<h2 style='text-align: center; color: #e3e3e3; font-weight: 500;'>🤖 OvroAI - Global Assistant</h2>", unsafe_allow_html=True)
 
 if "chat_history" not in st.session_state:
@@ -113,23 +114,21 @@ if "active_file" not in st.session_state:
 if "show_menu" not in st.session_state:
     st.session_state.show_menu = False
 
-# চ্যাট হিস্ট্রি প্রদর্শন
+# চ্যাট হিস্ট্রি ডিসপ্লে
 for role, text in st.session_state.chat_history:
     with st.chat_message(role):
         st.markdown(text)
 
-# ৬. ➕ প্লাস বাটনের কাস্টম মেনু লজিক (যা স্ক্রিনশটের মতো অপশন দেখাবে)
+# ৬. প্লাস মেনু ও ফাইল আপলোডার সেকশন
 st.markdown("<hr style='border-color: #2d2f31; margin: 20px 0;'>", unsafe_allow_html=True)
 
 col1, col2 = st.columns([1, 6])
 
 with col1:
-    # প্লাস বাটন (এটি ক্লিক করলে আপলোড মেনু অন/অফ হবে)
     if st.button("➕ Tools", key="toggle_plus_btn"):
         st.session_state.show_menu = not st.session_state.show_menu
         st.rerun()
 
-# প্লাস বাটনে চাপ দিলে এই পপআপ মেনুটি ভেসে উঠবে
 if st.session_state.show_menu:
     with col2:
         st.markdown("""
@@ -141,46 +140,38 @@ if st.session_state.show_menu:
         </div>
         """, unsafe_allow_html=True)
         
-        # নিচে আসল ড্রপবক্সটি ওপেন হবে ফাইল সিলেক্ট করার জন্য
         uploaded_file = st.file_uploader("সিলেক্ট করুন:", type=["jpg", "png", "jpeg", "pdf", "txt"], label_visibility="collapsed")
         if uploaded_file is not None:
             st.session_state.active_file = uploaded_file
-            st.success(f"✓ {uploaded_file.name} আপলোড হয়েছে!")
-            st.session_state.show_menu = False # ফাইল পাওয়ার পর মেনু বন্ধ হবে
+            st.session_state.show_menu = False
+            st.rerun()
 
-# যদি কোনো ছবি আপলোড করা থাকে, চ্যাট বক্সের ঠিক ওপরে তার প্রিভিউ দেখাবে
 if st.session_state.active_file is not None:
     try:
-        # ফাইলটি যদি ইমেজ হয় তবে প্রিভিউ দেখাবে
         img_preview = Image.open(st.session_state.active_file)
         st.image(img_preview, caption="সংযুক্ত ছবি", width=120)
     except:
         st.info(f"📁 ফাইল রেডি: {st.session_state.active_file.name}")
 
-# ৭. চ্যাট ইনপুট এবং প্রসেসিং
+# ৭. চ্যাট ইনপুট ও প্রসেসিং
 if prompt := st.chat_input("Ask OvroAI anything (Any language)..."):
     st.chat_message("user").markdown(prompt)
     st.session_state.chat_history.append(("user", prompt))
 
     with st.chat_message("assistant"):
         try:
-            # কন্টেন্ট অ্যারে তৈরি করা
             contents = []
-            
-            # যদি ফাইল আপলোড করা থাকে, তা জেমিনি এপিআই-তে পাঠানো হবে
             if st.session_state.active_file is not None:
                 file_bytes = st.session_state.active_file.read()
-                # যদি ইমেজ হয়
                 try:
                     img = Image.open(io.BytesIO(file_bytes))
                     contents.append(img)
                 except:
-                    # টেক্সট ফাইল বা অন্য ফাইল হলে
                     contents.append(file_bytes.decode("utf-8", errors="ignore"))
             
             contents.append(prompt)
 
-            # এপিআই রেসপন্স জেনারেট
+            # জেমিনির অফিশিয়াল ২.৫ ফ্ল্যাশ মডেল ব্যবহার
             response = client.models.generate_content(
                 model='gemini-2.5-flash',
                 contents=contents,
@@ -191,7 +182,6 @@ if prompt := st.chat_input("Ask OvroAI anything (Any language)..."):
             st.markdown(reply_text)
             st.session_state.chat_history.append(("assistant", reply_text))
             
-            # কাজ শেষ হওয়ার পর আপলোড করা ফাইল মেমোরি থেকে ক্লিয়ার করা
             st.session_state.active_file = None
             st.rerun()
             
