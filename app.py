@@ -2,8 +2,18 @@ import streamlit as st
 from google import genai
 from google.genai import types
 
-# ১. গ্লোবাল অ্যাপ কনফিগারেশন
+# ১. গ্লোবাল অ্যাপ কনফিগারেশন (ব্র্যান্ডিং লুকানোর কোড সহ)
 st.set_page_config(page_title="OvroAI - Global Assistant", page_icon="🌐", layout="wide")
+
+# "Built in Streamlit" লেখা এবং মেনুবার চিরতরে লুকিয়ে ফেলার ম্যাজিক সিএসএস
+st.markdown("""
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    div.stDeployButton {display: none;}
+    </style>
+    """, unsafe_allow_html=True)
 
 # ২. সিক্রেট বক্স থেকে নিরাপদে API Key সংগ্রহ করা
 if "GEMINI_API_KEY" in st.secrets:
@@ -15,7 +25,7 @@ else:
 # জেমিনি ক্লায়েন্ট সেটআপ
 client = genai.Client(api_key=API_KEY)
 
-# ৩. ওয়ার্ল্ড-ক্লাস ওভ্রোআই সুপার সিস্টেম ইন্সট্রাকশন
+# ৩. ওয়ার্ল্ড-класс ওভ্রোআই সুপার সিস্টেম ইন্সট্রাকশন
 global_super_instruction = (
     "Your name is OvroAI, a world-class, multi-lingual, and highly advanced AI assistant. "
     "You were developed by the visionary developer Refat Aoul from Satkhira, Bangladesh. "
@@ -46,7 +56,7 @@ with st.sidebar:
             login_user = st.text_input("Username/Email:", key="login_u")
             login_pass = st.text_input("Password:", type="password", key="login_p")
             if st.button("Log In", use_container_width=True):
-                if login_user and login_pass: # বাস্তব সিস্টেমে এখানে ডাটাবেজ কানেক্ট হবে
+                if login_user and login_pass:
                     st.session_state.user_status = "free_user"
                     st.session_state.username = login_user
                     st.rerun()
@@ -62,7 +72,7 @@ with st.sidebar:
     else:
         st.write(f"Welcome, **{st.session_state.username}** 👋")
         
-        # প্রিমিয়াম সাবস্ক্রিপশন সেকশন (বাণিজ্যিক রূপান্তরের জন্য)
+        # প্রিমিয়াম সাবস্ক্রিপশন সেকশন
         if st.session_state.user_status == "free_user":
             st.info("💡 You are using OvroAI Free Version.")
             st.markdown("### ⭐ Upgrade to OvroAI Premium")
@@ -84,12 +94,11 @@ with st.sidebar:
 # ৫. মূল চ্যাট ইন্টারফেস
 st.title("🤖 OvroAI - Your Global AI Companion")
 
-# ইউজার লগইন না করা পর্যন্ত চ্যাট লক থাকবে (গ্লোবাল সিকিউরিটি)
 if st.session_state.user_status == "guest":
     st.warning("⚠️ Please Sign Up or Log In from the sidebar to start chatting with OvroAI.")
     st.stop()
 
-# ৬. চ্যাট মেমোরি বা হিস্ট্রি ম্যানেজমেন্ট (যাতে পূর্বের কথা মনে রাখে)
+# ৬. চ্যাট মেমোরি বা হিস্ট্রি ম্যানেজমেন্ট
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
@@ -140,11 +149,3 @@ if prompt := st.chat_input("Ask OvroAI anything (Any language)..."):
                 
         except Exception as e:
             st.error(f"An error occurred: {e}")
-       # Streamlit এর নিচের ব্র্যান্ডিং ও ক্রেডিট লেখা লুকিয়ে ফেলার ম্যাজিক কোড
-st.markdown("""
-    <style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    </style>
-    """, unsafe_allow_html=True)
