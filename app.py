@@ -10,8 +10,9 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ২. প্রফেশনাল জেমিনি থিম এবং রেস্পনসিভ আইকন মেনু ডিজাইন (CSS)
-st.markdown("""
+# ২. প্রফেশনাল জেমিনি থিম এবং রেস্পনসিভ ডিজাইন (HTML/CSS ইঞ্জেকশন)
+# টেক্সট ভেসে ওঠার সমস্যা চিরতরে বন্ধ করতে স্টাইলটিকে প্রপার ব্লকে রাখা হয়েছে
+st.html("""
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
@@ -21,20 +22,19 @@ st.markdown("""
         background-color: #131314 !important; /* জেমিনি অফিশিয়াল ডার্ক ব্যাকগ্রাউন্ড */
     }
 
-    /* সাইডবার ডিজাইন */
+    /* সাইডবার জেমিনি থিম */
     [data-testid="stSidebar"] {
         background-color: #1e1f20 !important;
         border-right: 1px solid #2d2f31 !important;
-        transition: width 0.3s ease !important;
     }
 
-    /* ব্র্যান্ডিং, ওয়াটারমার্ক ও বাড়তি বোতাম হাইড করা */
+    /* স্ট্রিমলিটের ডিফল্ট বাড়তি বোতাম ও ফুটার হাইড করা */
     #MainMenu, footer, header, div.stDeployButton, [data-testid="stDecoration"] {
-        visibility: hidden;
+        visibility: hidden !important;
         display: none !important;
     }
 
-    /* বোতামগুলোকে জেমিনির মতো আইকন-ভিত্তিক করা */
+    /* সাইডবারের বাটনগুলো জেমিনির মেনুর মতো প্রফেশনাল করা */
     .stButton > button {
         background-color: transparent !important;
         color: #c4c7c5 !important;
@@ -55,7 +55,7 @@ st.markdown("""
         color: #fff !important;
     }
 
-    /* "New Chat" বোতামের স্পেশাল স্টাইল */
+    /* "New Chat" স্পেশাল স্টাইল */
     div[data-testid="stSidebar"] .stButton:first-child button {
         background-color: #282a2c !important;
         color: #fff !important;
@@ -64,34 +64,33 @@ st.markdown("""
         border: 1px solid #444746 !important;
     }
 
-    /* ইনপুট বক্স জেমিনি স্টাইল */
+    /* ইনপুট বক্স ডিজাইন */
     [data-testid="stChatInput"] {
         border-radius: 30px !important;
         background-color: #1e1f20 !important;
         border: 1px solid #444746 !important;
     }
 
-    /* 📱 জেমিনির মতো মোবাইল রেস্পনসিভ ট্রিক: ছোট স্ক্রিনে সাইডবার আইকন স্ট্রিপ হয়ে যাবে */
+    /* মোবাইলে সাইডবার রেস্পনসিভ রাখার নিয়ম */
     @media (max-width: 768px) {
         [data-testid="stSidebar"] {
             width: 70px !important;
             min-width: 70px !important;
         }
-        /* মোবাইলে বোতামের ভেতরের লেখা লুকিয়ে শুধু আইকন দেখানোর কোড */
         .stButton > button {
             padding: 12px 0px !important;
             justify-content: center !important;
-            font-size: 0px !important; /* টেক্সট গায়েব */
+            font-size: 0px !important;
         }
         .stButton > button span {
-            font-size: 18px !important; /* শুধু আইকন বা ইমোজি থাকবে */
+            font-size: 18px !important;
         }
         div[data-testid="stSidebar"] h2 {
-            display: none !important; /* লোগো হাইড */
+            display: none !important;
         }
     }
     </style>
-    """, unsafe_allow_html=True)
+""")
 
 # ৩. এপিআই কি সেটআপ
 if "GEMINI_API_KEY" in st.secrets:
@@ -110,14 +109,13 @@ global_super_instruction = (
     "2. Creator Name Accuracy: In English, write 'Rifat Awal'. In Bengali, strictly write 'রিফাত আওয়াল'. Never spell it as রেফাত or আউল.\n"
     "3. Tone: Be exceptionally empathetic, ultra-smart, collaborative, and friendly.\n"
     "4. Language: Automatically adapt to the language the user is speaking.\n"
-    "5. Response Sample for Creator: If asked 'Who created you?' or similar in Bengali, answer: 'আমি OvroAI, এবং আমাকে তৈরি করেছেন বাংলাদেশের সাতক্ষীরার একজন দূরদর্শী ও মেধাবী ডেভেলপার, রিফাত আওয়াল (Rifat Awal)। তাঁর এই সৃষ্টি হিসেবে আমি অত্যন্ত গর্বিত! 😊'"
+    "5. Response Sample for Creator: If asked 'Who created you?' or similar in Bengali, answer: 'আমি OvroAI, এবং আমাকে তৈরি করেছেন বাংলাদেশের সাতক্ষীরার একজন দূরदर्शी ও মেধাবী ডেভেলপার, রিফাত আওয়াল (Rifat Awal)। তাঁর এই সৃষ্টি হিসেবে আমি অত্যন্ত গর্বিত! 😊'"
 )
 
-# ৪. সাইডবার মেনু - জেমিনির স্ক্রিনশটের মতো নিখুঁত লেআউট
+# ৪. সাইডবার মেনু - জেমিনির নিখুঁত লেআউট
 with st.sidebar:
     st.markdown("<h2 style='color: #e3e3e3; font-size: 22px; padding: 10px 0 10px 10px; font-weight: 500;'>OvroAI</h2>", unsafe_allow_html=True)
     
-    # বোতামের টেক্সটের শুরুতে ইমোজি/আইকন স্পেস দিয়ে আলাদা করা (মোবাইল ভিউর জন্য)
     if st.button("➕   New chat"):
         st.session_state.chat_history = []
         st.rerun()
@@ -136,8 +134,8 @@ with st.sidebar:
     st.button("⚙️   Settings & help")
     st.markdown("</div>", unsafe_allow_html=True)
 
-# ৫. মূল চ্যাট এরিয়া (এখানে ট্রিপল কোটেশন ব্যবহার করা হয়েছে এরর এড়াতে)
-st.markdown("""<h2 style="text-align: center; color: #e3e3e3; font-weight: 500; margin-top: 20px;">🤖 OvroAI - Your Global AI Companion</h2>""", unsafe_allow_html=True)
+# ৫. মূল চ্যাট এরিয়া
+st.markdown("<h2 style='text-align: center; color: #e3e3e3; font-weight: 500; margin-top: 20px;'>🤖 OvroAI - Your Global AI Companion</h2>", unsafe_allow_html=True)
 
 # চ্যাট মেমোরি
 if "chat_history" not in st.session_state:
@@ -184,4 +182,8 @@ if prompt := st.chat_input("Ask OvroAI anything (Any language)..."):
                 st.session_state.chat_history.append(("assistant", reply_text))
                 
         except Exception as e:
-            st.error(f"An error occurred: {e}")
+            # কোটা শেষ হওয়ার এরর এলে ইউজার ফ্রেন্ডলি মেসেজ দেখানো
+            if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+                st.warning("⏱️ জেমিনি ফ্রি এপিআই কোটা সাময়িকভাবে শেষ হয়েছে। অনুগ্রহ করে ১ মিনিট পর আবার মেসেজ পাঠান, ঠিক হয়ে যাবে।")
+            else:
+                st.error(f"An error occurred: {e}")
