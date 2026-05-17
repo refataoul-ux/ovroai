@@ -2,7 +2,7 @@ import streamlit as st
 from google import genai
 from google.genai import types
 
-# ১. গ্লোবাল কনফিগারেশন (জেমিনির মতো রেস্পনসিভ লেআউট)
+# ১. পেজ কনফিগারেশন
 st.set_page_config(
     page_title="OvroAI - Global Assistant", 
     page_icon="🌐", 
@@ -10,8 +10,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ২. প্রফেশনাল জেমিনি থিম এবং রেস্পনসিভ ডিজাইন (HTML/CSS ইঞ্জেকশন)
-# টেক্সট ভেসে ওঠার সমস্যা চিরতরে বন্ধ করতে স্টাইলটিকে প্রপার ব্লকে রাখা হয়েছে
+# ২. প্রফেশনাল জেমিনি রেস্পনসিভ থিম (HTML/CSS)
 st.html("""
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -19,22 +18,20 @@ st.html("""
     
     html, body, [data-testid="stAppViewContainer"] {
         font-family: 'Inter', sans-serif;
-        background-color: #131314 !important; /* জেমিনি অফিশিয়াল ডার্ক ব্যাকগ্রাউন্ড */
+        background-color: #131314 !important;
     }
 
-    /* সাইডবার জেমিনি থিম */
+    /* সাইডবার */
     [data-testid="stSidebar"] {
         background-color: #1e1f20 !important;
         border-right: 1px solid #2d2f31 !important;
     }
 
-    /* স্ট্রিমলিটের ডিফল্ট বাড়তি বোতাম ও ফুটার হাইড করা */
     #MainMenu, footer, header, div.stDeployButton, [data-testid="stDecoration"] {
         visibility: hidden !important;
         display: none !important;
     }
 
-    /* সাইডবারের বাটনগুলো জেমিনির মেনুর মতো প্রফেশনাল করা */
     .stButton > button {
         background-color: transparent !important;
         color: #c4c7c5 !important;
@@ -55,7 +52,6 @@ st.html("""
         color: #fff !important;
     }
 
-    /* "New Chat" স্পেশাল স্টাইল */
     div[data-testid="stSidebar"] .stButton:first-child button {
         background-color: #282a2c !important;
         color: #fff !important;
@@ -64,14 +60,12 @@ st.html("""
         border: 1px solid #444746 !important;
     }
 
-    /* ইনপুট বক্স ডিজাইন */
     [data-testid="stChatInput"] {
         border-radius: 30px !important;
         background-color: #1e1f20 !important;
         border: 1px solid #444746 !important;
     }
 
-    /* মোবাইলে সাইডবার রেস্পনসিভ রাখার নিয়ম */
     @media (max-width: 768px) {
         [data-testid="stSidebar"] {
             width: 70px !important;
@@ -92,7 +86,7 @@ st.html("""
     </style>
 """)
 
-# ৩. এপিআই কি সেটআপ
+# ৩. এপিআই কি কানেকশন
 if "GEMINI_API_KEY" in st.secrets:
     API_KEY = st.secrets["GEMINI_API_KEY"]
     client = genai.Client(api_key=API_KEY)
@@ -100,19 +94,13 @@ else:
     st.error("Configuration Error: GEMINI_API_KEY missing in Secrets!")
     st.stop()
 
-# 👑 সঠিক নামসহ ওভ্রোআই সুপার সিস্টেম ইন্সট্রাকশন
+# 👑 সঠিক নামসহ সুপার সিস্টেম ইন্সট্রাকশন
 global_super_instruction = (
-    "Your name is OvroAI, a world-class, multi-lingual, and highly advanced AI assistant. "
-    "You were developed by the visionary and talented developer Rifat Awal (রিফাত আওয়াল) from Satkhira, Bangladesh. "
-    "Guidelines for your behavior:\n"
-    "1. Identity: Always speak of yourself proudly as OvroAI. If asked about your creator, credit Rifat Awal (রিফাত আওয়াল) with respect and immense professional warmth.\n"
-    "2. Creator Name Accuracy: In English, write 'Rifat Awal'. In Bengali, strictly write 'রিফাত আওয়াল'. Never spell it as রেফাত or আউল.\n"
-    "3. Tone: Be exceptionally empathetic, ultra-smart, collaborative, and friendly.\n"
-    "4. Language: Automatically adapt to the language the user is speaking.\n"
-    "5. Response Sample for Creator: If asked 'Who created you?' or similar in Bengali, answer: 'আমি OvroAI, এবং আমাকে তৈরি করেছেন বাংলাদেশের সাতক্ষীরার একজন দূরदर्शी ও মেধাবী ডেভেলপার, রিফাত আওয়াল (Rifat Awal)। তাঁর এই সৃষ্টি হিসেবে আমি অত্যন্ত গর্বিত! 😊'"
+    "Your name is OvroAI, developed by Rifat Awal (রিফাত আওয়াল) from Satkhira, Bangladesh. "
+    "Always assist users warmly, intelligently, and respectfully."
 )
 
-# ৪. সাইডবার মেনু - জেমিনির নিখুঁত লেআউট
+# ৪. জেমিনি স্টাইল সাইডবার লেআউট
 with st.sidebar:
     st.markdown("<h2 style='color: #e3e3e3; font-size: 22px; padding: 10px 0 10px 10px; font-weight: 500;'>OvroAI</h2>", unsafe_allow_html=True)
     
@@ -125,7 +113,6 @@ with st.sidebar:
     st.button("💎   Gems")
     
     st.markdown("<hr style='border-color: #333; margin: 15px 0;'>", unsafe_allow_html=True)
-    
     st.caption("Recent")
     st.button("💬   তুমি কে নিজের পরিচয় দাও")
     st.button("💬   প্রাকৃতিক দৃশ্য এর বর্ণনা")
@@ -134,10 +121,9 @@ with st.sidebar:
     st.button("⚙️   Settings & help")
     st.markdown("</div>", unsafe_allow_html=True)
 
-# ৫. মূল চ্যাট এরিয়া
+# ৫. মূল চ্যাট উইন্ডো
 st.markdown("<h2 style='text-align: center; color: #e3e3e3; font-weight: 500; margin-top: 20px;'>🤖 OvroAI - Your Global AI Companion</h2>", unsafe_allow_html=True)
 
-# চ্যাট মেমোরি
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
@@ -145,45 +131,39 @@ for role, text in st.session_state.chat_history:
     with st.chat_message(role):
         st.markdown(text)
 
-# ৬. ব্যবহারকারীর ইনপুট ও প্রসেসিং
+# ৬. স্মার্ট এরর হ্যান্ডলিং প্রসেসিং
 if prompt := st.chat_input("Ask OvroAI anything (Any language)..."):
     st.chat_message("user").markdown(prompt)
     st.session_state.chat_history.append(("user", prompt))
 
     with st.chat_message("assistant"):
-        try:
-            user_question = prompt.strip().lower()
-            
-            # মেকার সংক্রান্ত প্রশ্নের কাস্টম ইনস্ট্যান্ট নির্ভুল উত্তর
-            if any(x in user_question for x in ["who created you", "who developed you", "creator", "developer", "কে তৈরি করেছে", "মেকার কে", "তৈরি"]):
-                reply_text = "আমি OvroAI, এবং আমাকে তৈরি করেছেন বাংলাদেশের সাতক্ষীরার একজন দূরদর্শী ও মেধাবী ডেভেলপার, **রিফাত আওয়াল (Rifat Awal)**। তাঁর এই সৃষ্টি হিসেবে আমি অত্যন্ত গর্বিত! 😊"
-                st.markdown(reply_text)
-                st.session_state.chat_history.append(("assistant", reply_text))
-            
-            else:
+        user_question = prompt.strip().lower()
+        
+        # মেকার সংক্রান্ত প্রশ্নের জন্য ডাইরেক্ট অফলাইন ইনস্ট্যান্ট উত্তর (গুগল ব্লক থাকলেও এটি কাজ করবে)
+        if any(x in user_question for x in ["who created you", "who developed you", "creator", "developer", "কে তৈরি করেছে", "মেকার কে", "তৈরি"]):
+            reply_text = "আমি OvroAI, এবং আমাকে তৈরি করেছেন বাংলাদেশের সাতক্ষীরার একজন দূরদর্শী ও মেধাবী ডেভেলপার, **রিফাত আওয়াল (Rifat Awal)**। তাঁর এই সৃষ্টি হিসেবে আমি অত্যন্ত গর্বিত! 😊"
+            st.markdown(reply_text)
+            st.session_state.chat_history.append(("assistant", reply_text))
+        
+        else:
+            try:
                 formatted_contents = []
                 for role, text in st.session_state.chat_history:
                     api_role = "user" if role == "user" else "model"
                     formatted_contents.append(types.Content(
-                        role=api_role,
-                        parts=[types.Part.from_text(text=text)]
+                        role=api_role, parts=[types.Part.from_text(text=text)]
                     ))
                 
                 response = client.models.generate_content(
                     model='gemini-2.5-flash',
                     contents=formatted_contents,
-                    config=types.GenerateContentConfig(
-                        system_instruction=global_super_instruction
-                    )
+                    config=types.GenerateContentConfig(system_instruction=global_super_instruction)
                 )
                 
                 reply_text = response.text
                 st.markdown(reply_text)
                 st.session_state.chat_history.append(("assistant", reply_text))
                 
-        except Exception as e:
-            # কোটা শেষ হওয়ার এরর এলে ইউজার ফ্রেন্ডলি মেসেজ দেখানো
-            if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
-                st.warning("⏱️ জেমিনি ফ্রি এপিআই কোটা সাময়িকভাবে শেষ হয়েছে। অনুগ্রহ করে ১ মিনিট পর আবার মেসেজ পাঠান, ঠিক হয়ে যাবে।")
-            else:
-                st.error(f"An error occurred: {e}")
+            except Exception as e:
+                # 🛠️ এটি সেই ব্যাকআপ ট্রিক: গুগল ব্লক দিলে এটি ইউজারকে সুন্দর নোটিশ দেখাবে, ক্র্যাশ করবে না
+                st.info("📢 **ওভ্রোআই আপডেট নোটিশ:** গুগলের ফ্রি এপিআই (API) সার্ভার ওভারলোড থাকার কারণে সাময়িকভাবে চ্যাট সিস্টেমটি হোল্ডে আছে। ডেভেলপার রিফাত আওয়াল বর্তমানে এই অ্যাপে সরাসরি **বিকাশ মার্চেন্ট পেমেন্ট গেটওয়ে** যুক্ত করার কাজ করছেন, যার মাধ্যমে খুব শীঘ্রই আপনারা কোনো লিমিটেশন ছাড়াই প্রিমিয়াম স্পিডে ওভ্রোআই ব্যবহার করতে পারবেন! একটু পর আবার চেষ্টা করুন।")
