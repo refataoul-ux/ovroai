@@ -140,4 +140,11 @@ if prompt := st.chat_input("Ask OvroAI anything (Any language)..."):
                 
         except Exception as e:
             st.error(f"An error occurred: {e}")
-       
+       # Streamlit এর নিচের ব্র্যান্ডিং ও ক্রেডিট লেখা লুকিয়ে ফেলার ম্যাজিক কোড
+st.markdown("""
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    </style>
+    """, unsafe_allow_html=True)
