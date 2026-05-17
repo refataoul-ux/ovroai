@@ -2,7 +2,7 @@ import streamlit as st
 from google import genai
 from google.genai import types
 
-# ১. গ্লোবাল অ্যাপ কনফিগারেশন (ব্র্যান্ডিং লুকানো ও মোবাইলে সাইডবার স্থায়ী করার ম্যাজিক কোড)
+# ১. গ্লোবাল অ্যাপ কনফিগারেশন (সাইডবার চিরতরে স্থায়ী এবং ব্র্যান্ডিং লুকানোর কোড)
 st.set_page_config(page_title="OvroAI - Global Assistant", page_icon="🌐", layout="wide")
 
 st.markdown("""
@@ -19,29 +19,42 @@ st.markdown("""
     div[data-testid="stDecoration"] {display: none !important;}
     div[style*="position: fixed"][style*="bottom:"] {display: none !important;}
     
-    /* 📱 এই কোডটি মোবাইলেও সাইডবারকে জেমিনির মতো সবসময় স্থায়ী রাখবে */
+    /* 📌 কম্পিউটার এবং মোবাইল উভয় জায়গাতেই সাইডবারকে চিরতরে স্থায়ী (Fixed) করার মূল কোড */
+    [data-testid="stSidebar"] {
+        left: 0 !important;
+        position: fixed !important;
+        display: block !important;
+        visibility: visible !important;
+        width: 280px !important;
+        z-index: 999999 !important;
+    }
+    
+    /* সাইডবার বন্ধ করার তীর চিহ্নটি চিরতরে গায়েব করার কোড */
+    [data-testid="stSidebarCollapsedControl"], button[title="Collapse sidebar"] {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
+    /* মূল চ্যাট স্ক্রিনটি যেন সাইডবারের নিচে চাপা না পড়ে, তার জন্য জায়গা ছেড়ে দেওয়া */
+    .main .block-container {
+        margin-left: 290px !important;
+        padding-left: 20px !important;
+    }
+    
+    /* মোবাইলের জন্য স্ক্রিন সাইজ অ্যাডজাস্টমেন্ট */
     @media (max-width: 768px) {
         [data-testid="stSidebar"] {
-            left: 0 !important;
-            position: fixed !important;
-            display: block !important;
-            visibility: visible !important;
-            width: 240px !important;
-            z-index: 999999 !important;
-            background-color: #111217 !important;
-        }
-        [data-testid="stSidebarCollapsedControl"] {
-            display: none !important;
+            width: 200px !important;
         }
         .main .block-container {
-            margin-left: 240px !important;
-            padding-left: 20px !important;
+            margin-left: 210px !important;
+            padding-left: 10px !important;
         }
     }
     </style>
     """, unsafe_allow_html=True)
 
-# ২. সিক্রেট组件 থেকে নিরাপদে API Key সংগ্রহ করা
+# ২. সিক্রেট বক্স থেকে নিরাপদে API Key সংগ্রহ করা
 if "GEMINI_API_KEY" in st.secrets:
     API_KEY = st.secrets["GEMINI_API_KEY"]
 else:
@@ -124,7 +137,7 @@ if st.session_state.user_status == "guest":
     st.warning("⚠️ Please Sign Up or Log In from the sidebar to start chatting with OvroAI.")
     st.stop()
 
-# ৬. চ্যাট মেমোরি বা হিস্ট্রি ম্যানেজমেন্ট
+# 六. চ্যাট মেমোরি বা হিস্ট্রি ম্যানেজমেন্ট
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
