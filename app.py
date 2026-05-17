@@ -2,20 +2,46 @@ import streamlit as st
 from google import genai
 from google.genai import types
 
-# ১. গ্লোবাল অ্যাপ কনফিগারেশন (ব্র্যান্ডিং লুকানোর কোড সহ)
+# ১. গ্লোবাল অ্যাপ কনফিগারেশন (ব্র্যান্ডিং লুকানো ও মোবাইলে সাইডবার স্থায়ী করার ম্যাজিক কোড)
 st.set_page_config(page_title="OvroAI - Global Assistant", page_icon="🌐", layout="wide")
 
-# "Built in Streamlit" লেখা এবং মেনুবার চিরতরে লুকিয়ে ফেলার ম্যাজিক সিএসএস
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     div.stDeployButton {display: none;}
+    footer {display: none;}
+    [data-testid="stStatusWidget"] {display: none;}
+    .stAppDeployButton {display: none !important;}
+    iframe[title="Managed Hosting"] {display: none !important;}
+    button[title="View app viewer form"] {display: none !important;}
+    div[data-testid="stDecoration"] {display: none !important;}
+    div[style*="position: fixed"][style*="bottom:"] {display: none !important;}
+    
+    /* 📱 এই কোডটি মোবাইলেও সাইডবারকে জেমিনির মতো সবসময় স্থায়ী রাখবে */
+    @media (max-width: 768px) {
+        [data-testid="stSidebar"] {
+            left: 0 !important;
+            position: fixed !important;
+            display: block !important;
+            visibility: visible !important;
+            width: 240px !important;
+            z-index: 999999 !important;
+            background-color: #111217 !important;
+        }
+        [data-testid="stSidebarCollapsedControl"] {
+            display: none !important;
+        }
+        .main .block-container {
+            margin-left: 240px !important;
+            padding-left: 20px !important;
+        }
+    }
     </style>
     """, unsafe_allow_html=True)
 
-# ২. সিক্রেট বক্স থেকে নিরাপদে API Key সংগ্রহ করা
+# ২. সিক্রেট组件 থেকে নিরাপদে API Key সংগ্রহ করা
 if "GEMINI_API_KEY" in st.secrets:
     API_KEY = st.secrets["GEMINI_API_KEY"]
 else:
