@@ -7,7 +7,7 @@ st.set_page_config(page_title="OvroAI - Global Assistant", page_icon="🌐", lay
 
 # ২. সিক্রেট বক্স থেকে নিরাপদে API Key সংগ্রহ করা
 if "GEMINI_API_KEY" in st.secrets:
-    API_KEY = st.secrets["GEMINI_API_KEY"]
+    API_KEY = st.secrets["AIzaSyAJRjN0fEuEkidYfr8dWCFtKyapqcfG6K0"]
 else:
     st.error("Configuration Error: API Key not found! Please check Streamlit Secrets.")
     st.stop()
