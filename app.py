@@ -152,17 +152,37 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # =========================================================================
-# ৬. স্মার্ট এপিআই কী রোটেশন ব্যাকএন্ড ইঞ্জিন
+# ৬. স্মার্ট এপিআই কী রোটেশন ব্যাকএন্ড ইঞ্জিন (লিস্ট বাগ ফিক্সড)
 # =========================================================================
 def get_ai_client():
     valid_keys = []
-    # আপনার Secrets-এর সব ভেরিয়েবল চেক করে GEMINI_API_KEY লেখা কী-গুলো নিয়ে নেবে
+    
+    # প্রথমে সরাসরি একক কী চেক করা হচ্ছে
+    if "GEMINI_API_KEY" in st.secrets:
+        key_val = st.secrets["GEMINI_API_KEY"]
+        if isinstance(key_val, str) and key_val.strip():
+            valid_keys.append(key_val.strip())
+        elif isinstance(key_val, list):
+            for k in key_val:
+                if isinstance(k, str) and k.strip():
+                    valid_keys.append(k.strip())
+                    
+    # মাল্টিপল কী রোটেশনের জন্য অন্যান্য কী-গুলো স্ক্যান করা হচ্ছে
     for secret_key in st.secrets.keys():
-        if "GEMINI_API_KEY" in secret_key:
-            valid_keys.append(st.secrets[secret_key])
+        if "GEMINI_API_KEY" in secret_key and secret_key != "GEMINI_API_KEY":
+            key_val = st.secrets[secret_key]
+            if isinstance(key_val, str) and key_val.strip():
+                valid_keys.append(key_val.strip())
+            elif isinstance(key_val, list):
+                for k in key_val:
+                    if isinstance(k, str) and k.strip():
+                        valid_keys.append(k.strip())
+                        
+    # ডুপ্লিকেট কী থাকলে তা ফিল্টার করে বাদ দেওয়া হচ্ছে
+    valid_keys = list(set(valid_keys))
             
     if not valid_keys:
-        st.error("Secrets-এ কোনো GEMINI_API_KEY পাওয়া যায়নি! দয়া করে App Settings চেক করুন।")
+        st.error("Secrets-এ কোনো বৈধ GEMINI_API_KEY (String) পাওয়া যায়নি! দয়া করে .streamlit/secrets.toml ফাইলটি চেক করুন।")
         st.stop()
         
     return genai.Client(api_key=random.choice(valid_keys))
@@ -196,7 +216,7 @@ with st.sidebar:
             
     st.markdown("---")
 
-    # 💎 প্রিমিয়াম মেম্বারশিপ বক্স ($9 অপশন সব সময় সচল)
+    # 💎 প্রিমিয়াম মেম্বারশিপ বক্স ($9 অপশন)
     st.markdown("<div class='premium-sidebar-card'>", unsafe_allow_html=True)
     st.markdown(f"<p style='color: #94a3b8; margin:0; font-size:12px;'>CURRENT PLAN</p>", unsafe_allow_html=True)
     st.markdown(f"<h3 style='color: #fbbf24; margin-top:5px; margin-bottom:15px;'>👑 {st.session_state.user_tier} Tier</h3>", unsafe_allow_html=True)
