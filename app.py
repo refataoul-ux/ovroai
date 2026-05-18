@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import random
+import time
 
 # =========================================================================
 # ১. পেজ কনফিগারেশন ও ব্রাউজার সেটিংস
@@ -13,8 +14,10 @@ st.set_page_config(
 )
 
 # =========================================================================
-# ২. সেশন স্টেট কন্ট্রোল (লগইন এবং প্রিমিয়াম প্যাকেজ ব্যাকএন্ড)
+# ২. সেশন স্টেট কন্ট্রোল (স্প্ল্যাশ স্ক্রিন যেন লাইফে শুধু প্রথমবার আসে)
 # =========================================================================
+if "intro_done" not in st.session_state:
+    st.session_state.intro_done = False
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 if "user_tier" not in st.session_state:
@@ -23,80 +26,106 @@ if "is_logged_in" not in st.session_state:
     st.session_state.is_logged_in = False
 
 # =========================================================================
-# ৩. ২-৩ সেকেন্ডের সুপার-স্মুথ স্প্ল্যাশ স্ক্রিন (১০০% ফিক্সড মেইন ইন্টারফেস)
+# ৩. ২.৫ সেকেন্ডের জন্য স্প্ল্যাশ স্ক্রিন (অটো-ভ্যানিশ লজিক সহ)
+# =========================================================================
+if not st.session_state.intro_done:
+    placeholder = st.empty()
+    with placeholder.container():
+        st.markdown("""
+            <style>
+            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700&family=Inter:wght@400;700&display=swap');
+            
+            #intro-overlay {
+                position: fixed;
+                top: 0; left: 0; width: 100vw; height: 100vh;
+                background: #020408;
+                z-index: 9999999;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                opacity: 1;
+                transform: translateY(0);
+                transition: transform 0.8s cubic-bezier(0.85, 0, 0.15, 1), opacity 0.6s ease-in-out;
+            }
+            
+            .intro-box {
+                text-align: center;
+                animation: smoothPulse 1.2s ease-in-out infinite;
+            }
+            
+            /* বেগুনী গ্লোয়িং লোগো */
+            .logo-title {
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                font-size: 70px;
+                font-weight: 700;
+                color: #a855f7; 
+                text-shadow: 0 0 25px rgba(168, 85, 247, 0.7), 0 0 50px rgba(168, 85, 247, 0.4);
+                margin-bottom: 5px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 15px;
+            }
+            
+            /* CREATED BY সাদা */
+            .sub-text {
+                font-family: 'Inter', sans-serif;
+                font-size: 15px;
+                color: #ffffff; 
+                letter-spacing: 5px;
+                text-transform: uppercase;
+                margin-top: 15px;
+                font-weight: 400;
+            }
+            
+            /* REFAT AOUL নীল গ্লো */
+            .designer-name {
+                color: #6366f1; 
+                font-weight: 700;
+                text-shadow: 0 0 15px rgba(99, 102, 241, 0.6);
+            }
+
+            @keyframes smoothPulse {
+                0%, 100% { opacity: 0.7; transform: scale(0.99); }
+                50% { opacity: 1; transform: scale(1.01); }
+            }
+            </style>
+
+            <div id="intro-overlay">
+                <div class="intro-box">
+                    <div class="logo-title">🤖 OvroAI</div>
+                    <div class="sub-text">CREATED BY <span class="designer-name">REFAT AOUL</span></div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        time.sleep(2.5)  # লোগোটি ২.৫ সেকেন্ড থাকবে
+    
+    placeholder.empty()  # মেমোরি থেকে চিরতরে মুছে গেল
+    st.session_state.intro_done = True  # লক হয়ে গেল, আর কখনো Rerun-এ আসবে না
+    st.rerun()
+
+# =========================================================================
+# ৪. মূল অ্যাপ্লিকেশনের গ্লোবাল স্টাইল (UI/UX ও বাংলা ফন্ট ফিক্স)
 # =========================================================================
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700&family=Inter:wght@400;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Hind+Siliguri:wght@400;600;700&display=swap');
     
-    #intro-overlay {
-        position: fixed;
-        top: 0; left: 0; width: 100vw; height: 100vh;
-        background: #020408;
-        z-index: 9999999;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        opacity: 1;
-        transform: translateY(0);
-        /* দ্রুত এবং স্টাইলিশভাবে ওপরে উঠে যাওয়ার জন্য ট্র্যানজিশন */
-        transition: transform 0.8s cubic-bezier(0.85, 0, 0.15, 1), opacity 0.6s ease-in-out;
-    }
-    
-    .intro-box {
-        text-align: center;
-        /* দ্রুত ব্লিংকিং অ্যানিমেশন (১.২ সেকেন্ড পর পর পালস করবে) */
-        animation: smoothPulse 1.2s ease-in-out infinite;
-    }
-    
-    /* আপনার লোগোর মতো বেগুনী গ্লো */
-    .logo-title {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 70px;
-        font-weight: 700;
-        color: #a855f7; 
-        text-shadow: 0 0 25px rgba(168, 85, 247, 0.7), 0 0 50px rgba(168, 85, 247, 0.4);
-        margin-bottom: 5px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 15px;
-    }
-    
-    /* CREATED BY অংশটি থাকবে সম্পূর্ণ সাদা */
-    .sub-text {
-        font-family: 'Inter', sans-serif;
-        font-size: 15px;
-        color: #ffffff; 
-        letter-spacing: 5px;
-        text-transform: uppercase;
-        margin-top: 15px;
-        font-weight: 400;
-    }
-    
-    /* REFAT AOUL অংশটি থাকবে উজ্জ্বল নীল গ্লো */
-    .designer-name {
-        color: #6366f1; 
-        font-weight: 700;
-        text-shadow: 0 0 15px rgba(99, 102, 241, 0.6);
-    }
-
-    /* মসৃণ পালস বা ব্লিংকিং ইফেক্ট */
-    @keyframes smoothPulse {
-        0%, 100% { opacity: 0.7; transform: scale(0.99); }
-        50% { opacity: 1; transform: scale(1.01); }
-    }
-
-    /* মূল ড্যাশবোর্ড ও চ্যাট পেজের কাস্টম লাক্সারি লুক */
-    [data-testid="stAppViewContainer"] {
+    html, body, [data-testid="stAppViewContainer"], [data-testid="stSidebar"], .stMarkdown {
+        font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif !important;
         background: radial-gradient(circle at top right, #090d16, #020408) !important;
+        color: #f1f5f9 !important;
     }
+
     [data-testid="stSidebar"] {
         background-color: #05070c !important;
         border-right: 1px solid rgba(168, 85, 247, 0.15) !important;
     }
+
+    div[data-testid="stHeader"] > div:first-child { display: none !important; }
+    div.stDeployButton, footer, #MainMenu, [data-testid="stDecoration"] { display: none !important; }
+    [data-testid="stChatInput"] { border-radius: 16px !important; border: 1px solid rgba(168, 85, 247, 0.3) !important; }
     
-    /* সাইডবারের স্থায়ী প্রিমিয়াম আপগ্রেড কার্ড */
     .premium-sidebar-card {
         background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(99, 102, 241, 0.05));
         border: 1px solid rgba(168, 85, 247, 0.3);
@@ -105,43 +134,12 @@ st.markdown("""
         text-align: center;
         margin-top: 20px;
         margin-bottom: 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     }
     </style>
-
-    <div id="intro-overlay">
-        <div class="intro-box">
-            <div class="logo-title">🤖 OvroAI</div>
-            <div class="sub-text">CREATED BY <span class="designer-name">REFAT AOUL</span></div>
-        </div>
-    </div>
-
-    <script>
-    // ঠিক ২.৫ সেকেন্ড পর স্ক্রিনটি ওপরে উঠে যাবে এবং মেইন ইন্টারফেস দেখাবে
-    setTimeout(function() {
-        var overlay = window.parent.document.getElementById('intro-overlay');
-        if (overlay) {
-            overlay.style.transform = 'translateY(-100vh)'; // স্টাইলিশ উপরের দিকে সরে যাওয়া
-            overlay.style.opacity = '0';
-            setTimeout(function() { overlay.style.display = 'none'; }, 800);
-        }
-    }, 2500); // ২.৫ সেকেন্ড টাইমিং ফিক্সড
-    </script>
     """, unsafe_allow_html=True)
 
 # =========================================================================
-# ৪. গিটহাব রিমুভাল ও ইন্টারফেস ক্লিনিং সিএসএস
-# =========================================================================
-st.markdown("""
-    <style>
-    div[data-testid="stHeader"] > div:first-child { display: none !important; }
-    div.stDeployButton, footer, #MainMenu, [data-testid="stDecoration"] { display: none !important; }
-    [data-testid="stChatInput"] { border-radius: 16px !important; border: 1px solid rgba(168, 85, 247, 0.3) !important; }
-    </style>
-    """, unsafe_allow_html=True)
-
-# =========================================================================
-# ৫. স্থায়ী সাইডবার এবং প্রিমিয়াম মেম্বারশিপ অপশন প্যানেল
+# ৫. সাইডবার এবং প্রিমিয়াম মেম্বারশিপ অপশন প্যানেল
 # =========================================================================
 with st.sidebar:
     st.markdown("<div style='padding-top: 10px;'></div>", unsafe_allow_html=True)
@@ -169,7 +167,7 @@ with st.sidebar:
             
     st.markdown("---")
 
-    # 💎 প্রিমিয়াম মেম্বারশিপ বক্স ($9 অপশন স্থায়ীভাবে দৃশ্যমান)
+    # 💎 প্রিমিয়াম মেম্বারশিপ বক্স ($9 অপশন সব সময় সচল)
     st.markdown("<div class='premium-sidebar-card'>", unsafe_allow_html=True)
     st.markdown(f"<p style='color: #94a3b8; margin:0; font-size:12px;'>CURRENT PLAN</p>", unsafe_allow_html=True)
     st.markdown(f"<h3 style='color: #fbbf24; margin-top:5px; margin-bottom:15px;'>👑 {st.session_state.user_tier} Tier</h3>", unsafe_allow_html=True)
@@ -194,18 +192,12 @@ with st.sidebar:
     if st.button("➕ New Conversation", use_container_width=True, key="new_chat_sidebar"):
         st.session_state.chat_history = []
         st.rerun()
-        
-    if st.session_state.is_logged_in:
-        if st.button("Logout", use_container_width=True, key="logout_sidebar"):
-            st.session_state.is_logged_in = False
-            st.session_state.user_tier = "Basic"
-            st.rerun()
 
 # =========================================================================
-# ৪. মূল চ্যাট উইন্ডো ইন্টারফেস
+# ৬. মূল চ্যাট উইন্ডো ইন্টারফেস (১০০% সচল ও দৃশ্যমান)
 # =========================================================================
 st.markdown("<h1 style='text-align: center; color: white; margin-bottom: 0;'>🤖 OvroAI Assistant</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #64748b; margin-top: 5px;'>2026 Intelligence Engine • Created by Refat Aoul</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #64748b; margin-top: 5px;'>2026 Core Engine • Created by Refat Aoul</p>", unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
 # চ্যাট হিস্ট্রি রেন্ডারিং
