@@ -1,22 +1,37 @@
 import streamlit as st
 import os
+import random
+import io
 from google import genai
 from google.genai import types
 from PIL import Image
-import io
-import random
 
-# ১. পেজ কনফিগারেশন ও থিম সেটিং
+# =========================================================================
+# ১. পেজ কনফিগারেশন ও ব্রাউজার সেটিংস
+# =========================================================================
 st.set_page_config(
-    page_title="OvroAI - Global Assistant", 
-    page_icon="🌐", 
+    page_title="OvroAI - Global Assistant 2026", 
+    page_icon="🤖", 
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# ২. নিখুঁত সিএসএস ইন্টিগ্রেশন (যাতে উপরে কোনো লেখা ভেসে না ওঠে)
-st.html("""
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+# =========================================================================
+# ২. ২০২৬ সালের তথ্যের জন্য সুপার ইনস্ট্রাকশন ফিক্স
+# =========================================================================
+current_date_info = """
+Today's date is Monday, May 18, 2026. 
+Current Global Context for you:
+- World is preparing for the 2026 FIFA World Cup in North America.
+- Current News (May 2026): WHO is monitoring a new Ebola strain in DRC.
+- You are OvroAI, developed by Rifat Awal from Satkhira, Bangladesh.
+Always provide information based on this 2026 timeline and context. Never say your knowledge cutoff is 2024.
+"""
+
+# =========================================================================
+# ৩. সিএসএস ডিজাইন (সাইডবার বাটন ফিক্স, গিটহাব লোগো হাইড, ইউজার ইন্টারফেস)
+# =========================================================================
+st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
     
@@ -25,13 +40,12 @@ st.html("""
         background-color: #131314 !important;
     }
     
-    [data-testid="stSidebar"] {
-        background-color: #1e1f20 !important;
-        border-right: 1px solid #2d2f31 !important;
-    }
+    /* সাইডবার মেনু বাটন বা কোলাপ্সড আইকন যাতে স্ক্রিন থেকে চিরতরে হারিয়ে না যায় */
+    [data-testid="stSidebarNav"] { display: block !important; }
+    .st-emotion-cache-hp898u, .st-emotion-cache-1m4vsg4 { color: #11caa0 !important; } 
     
-    /* স্ট্রিমলিটের সমস্ত ডিফল্ট বাটন, গিটহাব লিঙ্ক ও ফুটার চিরতরে হাইড করা */
-    #MainMenu, footer, header, div.stDeployButton, [data-testid="stDecoration"], [data-testid="stSendButton"]+div {
+    /* স্ট্রিমলিটের ডিফল্ট ফুটার, গিটহাব বাটন এবং উপরের সাজসজ্জা চিরতরে হাইড করা */
+    #MainMenu, footer, header, div.stDeployButton, [data-testid="stDecoration"] {
         visibility: hidden !important;
         display: none !important;
     }
@@ -41,186 +55,129 @@ st.html("""
         background-color: #1e1f20 !important;
         border: 1px solid #444746 !important;
     }
-    
-    /* কাস্টম পপআপ মেনু ডিজাইন */
-    .upload-popup-menu {
-        background-color: #edf2f7 !important;
-        border-radius: 16px;
-        padding: 12px;
-        width: 220px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        margin-bottom: 10px;
-    }
-    .popup-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 10px 12px;
-        color: #1f2937 !important;
-        font-size: 15px;
-        font-weight: 500;
-        border-radius: 8px;
-    }
     </style>
-""")
+    """, unsafe_allow_html=True)
 
-# ৩. মাল্টিপল এপিআই কি লোড করার মেকানিজম (কি রোটেশন ট্রিক)
-api_keys = []
-if "GEMINI_API_KEY" in st.secrets and st.secrets["GEMINI_API_KEY"]:
-    api_keys.append(st.secrets["GEMINI_API_KEY"])
-if "GEMINI_API_KEY_2" in st.secrets and st.secrets["GEMINI_API_KEY_2"]:
-    api_keys.append(st.secrets["GEMINI_API_KEY_2"])
+# =========================================================================
+# ৪. ৫টি এপিআই কী-র লিস্ট রোটেশন লজিক (সবচেয়ে নিরাপদ মেথড)
+# =========================================================================
+def get_random_client():
+    valid_keys = []
+    
+    # সিক্রেটস থেকে GEMINI_API_KEYS লিস্টটি রিড করার চেষ্টা
+    if "GEMINI_API_KEYS" in st.secrets:
+        try:
+            valid_keys = list(st.secrets["GEMINI_API_KEYS"])
+        except Exception:
+            pass
 
-if not api_keys:
-    st.error("Secrets-এ কোনো GEMINI_API_KEY পাওয়া যায়নি!")
-    st.stop()
+    # যদি কোনো কারণে লিস্ট খালি থাকে বা না পায়
+    if not valid_keys:
+        st.error("Secrets-এ কোনো GEMINI_API_KEYS লিস্ট পাওয়া যায়নি বা ফরম্যাটে ভুল আছে! দয়া করে Streamlit Secrets চেক করুন।")
+        st.stop()
+        
+    # লিস্টে থাকা ৫টি কী থেকে যেকোনো একটি কী প্রতি মেসেজে রেন্ডমলি বেছে নেবে
+    selected_key = random.choice(valid_keys)
+    return genai.Client(api_key=selected_key)
 
-global_super_instruction = "Your name is OvroAI, developed by Rifat Awal from Satkhira, Bangladesh. Always assist users warmly."
+# =========================================================================
+# ৫. স্থায়ী লগইন সিস্টেম (পেইজ রিলোড বা রিফ্রেশ দিলেও লগআউট হবে না)
+# =========================================================================
+if "is_logged_in" not in st.session_state:
+    # পেইজ রিফ্রেশ হলে ব্রাউজারের ইউআরএল প্যারামিটার থেকে সেশন পুনরুদ্ধার করবে
+    params = st.query_params
+    if params.get("login") == "true":
+        st.session_state.is_logged_in = True
+        st.session_state.user_tier = params.get("tier", "Free")
+    else:
+        st.session_state.is_logged_in = False
+        st.session_state.user_tier = "Free"
 
-# ৪. সেশন স্টেট ইনিশিয়ালাইজেশন
+# =========================================================================
+# ৬. সেশন স্টেট ইনিশিয়ালাইজেশন
+# =========================================================================
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
-if "active_file" not in st.session_state:
-    st.session_state.active_file = None
-if "show_menu" not in st.session_state:
-    st.session_state.show_menu = False
-if "is_logged_in" not in st.session_state:
-    st.session_state.is_logged_in = False
-if "user_tier" not in st.session_state:
-    st.session_state.user_tier = "Free"
 
-# ৫. সাইডবার লেআউট ও অপショナル লগইন প্যানেল
+# =========================================================================
+# ৭. সাইডবার ডিজাইন ও কন্ট্রোল
+# =========================================================================
 with st.sidebar:
-    st.markdown("<h2 style='color: #e3e3e3; font-size: 22px; padding: 10px;'>OvroAI</h2>", unsafe_allow_html=True)
-    
+    st.markdown("<h2 style='color: #e3e3e3; font-size: 24px;'>OvroAI 2026</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #888; font-size: 12px;'>Global Assistant Platform</p>", unsafe_allow_html=True)
     st.markdown("<hr style='border-color: #333;'>", unsafe_allow_html=True)
+    
     if not st.session_state.is_logged_in:
-        st.markdown("<p style='color: #c4c7c5; font-size: 14px;'>👤 অ্যাকাউন্ট অপশন (অপশনাল)</p>", unsafe_allow_html=True)
-        username = st.text_input("ইউজারনেম", placeholder="username", label_visibility="collapsed")
-        password = st.text_input("পাসওয়ার্ড", type="password", placeholder="password", label_visibility="collapsed")
+        st.markdown("🔒 **লগইন প্যানেল (অপশনাল)**")
+        user = st.text_input("Username", placeholder="username", label_visibility="collapsed")
+        pwd = st.text_input("Password", type="password", placeholder="password", label_visibility="collapsed")
         
         col_login, col_reg = st.columns(2)
         with col_login:
-            if st.button("লগইন"):
-                if username == "rifat" and password == "1234":
+            if st.button("Login", use_container_width=True):
+                if user == "rifat" and pwd == "1234":
                     st.session_state.is_logged_in = True
                     st.session_state.user_tier = "Premium"
-                    st.success("🎉 স্বাগতম রিফাত ভাই!")
+                    # ইউআরএল প্যারামিটারে স্টেট লক করা যাতে রিফ্রেশে লগআউট না হয়
+                    st.query_params["login"] = "true"
+                    st.query_params["tier"] = "Premium"
                     st.rerun()
-                elif username and password:
-                    st.session_state.is_logged_in = True
-                    st.session_state.user_tier = "Free"
-                    st.success("লগইন সফল!")
-                    st.rerun()
+                else:
+                    st.error("ভুল তথ্য!")
         with col_reg:
-            st.button("রেজিস্ট্রেশন")
+            st.button("Register", use_container_width=True)
     else:
         tier_color = "#FFD700" if st.session_state.user_tier == "Premium" else "#00FF00"
         st.markdown(f"Status: <b style='color:{tier_color};'>{st.session_state.user_tier} User</b>", unsafe_allow_html=True)
-        if st.button("লগআউট"):
+        st.info("✅ আপনার লগইন সেশন সক্রিয় আছে। রিলোড দিলেও লগআউট হবে না।")
+        if st.button("Logout", use_container_width=True):
             st.session_state.is_logged_in = False
-            st.session_state.user_tier = "Free"
+            st.query_params.clear() # লগআউট করলে ইউআরএল ক্লিন হবে
             st.rerun()
-            
+
     st.markdown("<hr style='border-color: #333;'>", unsafe_allow_html=True)
-    if st.button("➕   New chat"):
+    if st.button("➕ New Chat", use_container_width=True):
         st.session_state.chat_history = []
-        st.session_state.active_file = None
-        st.session_state.show_menu = False
         st.rerun()
 
-# ৬. মূল উইন্ডো ইন্টারফেস
+# =========================================================================
+# ৮. মূল চ্যাট উইন্ডো ইন্টারফেস
+# =========================================================================
 st.markdown("<h2 style='text-align: center; color: #e3e3e3; font-weight: 500;'>🤖 OvroAI - Global Assistant</h2>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #888;'>Powered by 5x Dynamic API Key Rotation</p>", unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
-# চ্যাট হিস্ট্রি ডিসপ্লে
+# পুরোনো চ্যাট স্ক্রিনে দেখানো
 for role, text in st.session_state.chat_history:
     with st.chat_message(role):
         st.markdown(text)
 
-st.markdown("<br>", unsafe_allow_html=True)
-col1, col2 = st.columns([1, 6])
-
-with col1:
-    if st.button("➕ Tools", key="toggle_plus_btn"):
-        st.session_state.show_menu = not st.session_state.show_menu
-        st.rerun()
-
-if st.session_state.show_menu:
-    with col2:
-        st.markdown("""
-        <div class="upload-popup-menu">
-            <div class="popup-item"><i class="fa-solid fa-paperclip"></i> Upload files</div>
-            <div class="popup-item"><i class="fa-brands fa-google-drive"></i> Add from Drive</div>
-            <div class="popup-item"><i class="fa-regular fa-image"></i> Photos</div>
-            <div class="popup-item"><i class="fa-solid fa-book-open"></i> NotebookLM</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        uploaded_file = st.file_uploader("ফাইল:", type=["jpg", "png", "jpeg", "pdf", "txt"], label_visibility="collapsed")
-        if uploaded_file is not None:
-            st.session_state.active_file = uploaded_file
-            st.session_state.show_menu = False
-            st.rerun()
-
-if st.session_state.active_file is not None:
-    try:
-        img_preview = Image.open(st.session_state.active_file)
-        st.image(img_preview, caption="সংযুক্ত ছবি", width=120)
-    except:
-        st.info(f"📁 ফাইল রেডি: {st.session_state.active_file.name}")
-
-# ৭. চ্যাট ইনপুট ও স্মার্ট রোটেশনাল প্রসেসিং
+# =========================================================================
+# ৯. চ্যাট ইনপুট ও প্রসেসিং
+# =========================================================================
 if prompt := st.chat_input("Ask OvroAI anything..."):
     st.chat_message("user").markdown(prompt)
     st.session_state.chat_history.append(("user", prompt))
 
     with st.chat_message("assistant"):
-        response_received = False
-        
-        # জেমিনি কি-গুলো র্যান্ডমলি উলটপালট করে ট্রাই করা হবে যাতে চাপ সমান ভাগে পড়ে
-        shuffled_keys = api_keys.copy()
-        random.shuffle(shuffled_keys)
-        
-        for index, current_key in enumerate(shuffled_keys):
-            try:
-                # বর্তমান সিলেক্টেড কি দিয়ে ক্লায়েন্ট তৈরি
-                client = genai.Client(api_key=current_key)
-                
-                contents = []
-                if st.session_state.active_file is not None:
-                    file_bytes = st.session_state.active_file.read()
-                    try:
-                        img = Image.open(io.BytesIO(file_bytes))
-                        contents.append(img)
-                    except:
-                        contents.append(file_bytes.decode("utf-8", errors="ignore"))
-                
-                contents.append(prompt)
-
-                response = client.models.generate_content(
-                    model='gemini-2.5-flash',
-                    contents=contents,
-                    config=types.GenerateContentConfig(system_instruction=global_super_instruction)
-                )
-                
-                reply_text = response.text
-                st.markdown(reply_text)
-                st.session_state.chat_history.append(("assistant", reply_text))
-                st.session_state.active_file = None
-                response_received = True
-                break # সফলভাবে উত্তর পেলে লুপ থেকে বের হয়ে যাবে
-                
-            except Exception as e:
-                # যদি এটি শেষ কি না হয় এবং কোটা এরর আসে, তবে পরের কি ট্রাই করবে
-                if ("429" in str(e) or "RESOURCE_EXHAUSTED" in str(e)) and (index < len(shuffled_keys) - 1):
-                    continue
-                else:
-                    # যদি সব কি ব্লক থাকে বা অন্য কোনো বড় এরর হয়
-                    if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
-                        st.info("⏱️ ওভ্রোআই-এর সবগুলো ফ্রি ব্যাকএন্ড লাইন এই মুহূর্তে ব্যস্ত। অনুগ্রহ করে ১ মিনিট পর আবার চেষ্টা করুন।")
-                    else:
-                        st.error(f"Error: {e}")
-                    break
-        
-        if response_received:
+        try:
+            # ডায়নামিক ৫টি কী-র লিস্ট থেকে ক্লায়েন্ট তৈরি
+            client = get_random_client()
+            
+            # লেটেস্ট ২০২৬ রেডি প্রফেশনাল মডেল
+            response = client.models.generate_content(
+                model='gemini-2.0-flash', 
+                contents=prompt,
+                config=types.GenerateContentConfig(system_instruction=current_date_info)
+            )
+            
+            reply = response.text
+            st.markdown(reply)
+            st.session_state.chat_history.append(("assistant", reply))
             st.rerun()
+            
+        except Exception as e:
+            if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+                st.info("⏱️ সবগুলো ফ্রি ব্যাকএন্ড লাইন এই মুহূর্তে অত্যন্ত ব্যস্ত। অনুগ্রহ করে ১০ সেকেন্ড পর আবার মেসেজ দিন।")
+            else:
+                st.error(f"Error: {e}")
