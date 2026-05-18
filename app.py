@@ -27,7 +27,7 @@ Current Global Context for you:
 """
 
 # =========================================================================
-# ৩. সেশন স্টেট ইনিশিয়ালাইজেশন (স্প্ল্যাশ স্ক্রিন যেন শুধু প্রথমবার আসে)
+# ৩. সেশন স্টেট ইনিশিয়ালাইজেশন (স্মার্ট কন্ট্রোল)
 # =========================================================================
 if "intro_shown" not in st.session_state:
     st.session_state.intro_shown = False
@@ -45,7 +45,7 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
 # =========================================================================
-# ৪. ৩ সেকেন্ডের জন্য প্রিমিয়াম স্প্ল্যাশ স্ক্রিন (আটকে থাকবে না, অটো ভ্যানিশ হবে)
+# ৪. ৪-৫ সেকেন্ডের প্রিমিয়াম স্প্ল্যাশ স্ক্রিন অ্যানিমেশন (ফাস্ট লোড ও অটো-ভ্যানিশ)
 # =========================================================================
 if not st.session_state.intro_shown:
     placeholder = st.empty()
@@ -68,6 +68,7 @@ if not st.session_state.intro_shown:
             
             .intro-box {
                 text-align: center;
+                animation: fadeInOut 4.5s ease-in-out infinite;
             }
             
             .intro-title {
@@ -80,6 +81,7 @@ if not st.session_state.intro_shown:
                 align-items: center;
                 justify-content: center;
                 gap: 15px;
+                text-shadow: 0 0 30px rgba(99, 102, 241, 0.3);
             }
             
             .intro-sub {
@@ -89,6 +91,14 @@ if not st.session_state.intro_shown:
                 text-transform: uppercase;
                 font-weight: 700;
                 margin-top: 15px;
+                text-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+            }
+
+            @keyframes fadeInOut {
+                0% { opacity: 0; transform: scale(0.95); }
+                15% { opacity: 1; transform: scale(1); }
+                85% { opacity: 1; transform: scale(1); }
+                100% { opacity: 0; transform: scale(1.02); }
             }
             </style>
             <div class="intro-bg">
@@ -98,12 +108,13 @@ if not st.session_state.intro_shown:
                 </div>
             </div>
             """, unsafe_allow_html=True)
-        time.sleep(3)  # ঠিক ৩ সেকেন্ড স্ক্রিনটি দেখাবে
-    placeholder.empty()  # ৩ সেকেন্ড শেষ হওয়া মাত্রই ইন্ট্রো স্ক্রিনটি মেমোরি থেকে মুছে যাবে
-    st.session_state.intro_shown = True  # সেশনে সেভ হয়ে গেল যাতে বারবার ডিস্টার্ব না করে
+        time.sleep(4.5)  # আপনার চাহিদা মতো ঠিক ৪.৫ সেকেন্ড গ্লোয়িং অ্যানিমেশন চলবে
+    placeholder.empty()  # মেমোরি থেকে স্প্ল্যাশ স্ক্রিন মুছে মূল পেজ ওপেন হবে
+    st.session_state.intro_shown = True
+    st.rerun()
 
 # =========================================================================
-# ৫. মূল অ্যাপ্লিকেশনের গ্লোবাল সিএসএস (UI/UX প্রটেকশন ও বাংলা ফন্ট ফিক্স)
+# ৫. মূল অ্যাপ্লিকেশনের গ্লোবাল সিএসএস (UI/UX ও বাংলা ফন্ট ফিক্স)
 # =========================================================================
 st.markdown("""
     <style>
@@ -122,16 +133,15 @@ st.markdown("""
         border-right: 1px solid rgba(99, 102, 241, 0.15) !important;
     }
     
-    /* সাইডবার ওপেন/ক্লোজ করার বাটনের গ্লোয়িং স্টাইল */
+    /* সাইডবার বাটন স্টাইল */
     [data-testid="stSidebarCollapseButton"] {
         background: rgba(10, 15, 30, 0.9) !important;
         border: 1px solid #6366f1 !important;
         color: #6366f1 !important;
         border-radius: 10px !important;
-        box-shadow: 0 0 12px rgba(99, 102, 241, 0.3) !important;
     }
 
-    /* ডান পাশের অপ্রয়োজনীয় গিটহাব আইকন ও মেনু হাইড */
+    /* গিটহাব আইকন ও মেনু হাইড */
     div[data-testid="stHeader"] > div:first-child {
         display: none !important;
     }
@@ -168,7 +178,7 @@ def get_ai_client():
     return genai.Client(api_key=random.choice(valid_keys))
 
 # =========================================================================
-# ৭. সাইডবার লেআউট (লগইন, সাইনআপ এবং প্রিমিয়াম প্যাকেজ)
+# ৭. সাইডবার লেআউট (লগইন, সাইনআপ এবং $9 প্রিমিয়াম প্যাকেজ)
 # =========================================================================
 with st.sidebar:
     st.markdown("<div style='padding-top: 15px;'></div>", unsafe_allow_html=True)
@@ -197,7 +207,7 @@ with st.sidebar:
         with col2:
             st.button("Sign Up", use_container_width=True, key="signup_action")
     else:
-        # প্রিমিয়াম টায়ার ম্যানেজমেন্ট
+        # প্রিমিয়াম মেম্বারশিপ টায়ার ($9 প্রাইসিং ফিক্স)
         st.markdown(f"""
             <div class='premium-card'>
                 <p style='margin:0; font-size:12px; color:#94a3b8;'>Subscription Plan</p>
@@ -205,11 +215,17 @@ with st.sidebar:
             </div>
         """, unsafe_allow_html=True)
         
-        st.markdown("<b style='color: #94a3b8; font-size: 14px;'>🏆 প্রিমিয়াম ফিচারসমূহ:</b>", unsafe_allow_html=True)
+        st.markdown("<b style='color: #94a3b8; font-size: 14px;'>🏆 একটিভ ফিচারসমূহ:</b>", unsafe_allow_html=True)
         st.markdown("- আনলিমিটেড আল্ট্রা-ফাস্ট এপিআই কল\n- ২০২৬ রিয়েল-টাইম গ্লোবাল ডেটা")
         st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
         
-        if st.session_state.user_tier == "Pro":
+        if st.session_state.user_tier == "Basic":
+            if st.button("Upgrade to Pro ($9/mo)", use_container_width=True, key="upgrade_to_pro_btn"):
+                st.balloons()
+                st.session_state.user_tier = "Pro"
+                st.query_params["tier"] = "Pro"
+                st.rerun()
+        elif st.session_state.user_tier == "Pro":
             if st.button("Upgrade to Elite ($49/mo)", use_container_width=True, key="elite_btn"):
                 st.balloons()
                 st.session_state.user_tier = "Elite"
@@ -230,7 +246,7 @@ with st.sidebar:
         st.rerun()
 
 # =========================================================================
-# ৮. মূল চ্যাট ইন্টারফেস (ইন্ট্রো স্ক্রিনের পর সাথে সাথে লোড হবে)
+# ৮. মূল চ্যাট ইন্টারফেস
 # =========================================================================
 st.markdown("<h1 style='text-align: center; color: #ffffff; margin-bottom:0;'>🤖 OvroAI Assistant</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #64748b;'>2026 Core Engine • Powered by Refat Aoul</p>", unsafe_allow_html=True)
