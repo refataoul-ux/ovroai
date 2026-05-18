@@ -16,7 +16,7 @@ st.set_page_config(
 )
 
 # =========================================================================
-# ২. ২০২৬ সালের তথ্যের জন্য সুপার ইনস্ট্রাকশন ফিক্স (Refat Aoul Branding)
+# ২. ২০跨৬ সালের তথ্যের জন্য সুপার ইনস্ট্রাকশন ফিক্স (Refat Aoul Branding)
 # =========================================================================
 current_date_info = """
 Today's date is Monday, May 18, 2026. 
@@ -111,10 +111,10 @@ if not st.session_state.intro_done:
                 </div>
             </div>
             """, unsafe_allow_html=True)
-        time.sleep(2.5)  # লোগোটি ২.৫ সেকেন্ড থাকবে
+        time.sleep(2.5)  # লোগোটি ঠিক ২.৫ সেকেন্ড থাকবে
     
-    placeholder.empty()  # মেমোরি থেকে চিরতরে মুছে গেল
-    st.session_state.intro_done = True  # লক হয়ে গেল, আর কখনো Rerun-এ আসবে না
+    placeholder.empty()  # মেমোরি থেকে মুছে গেল
+    st.session_state.intro_done = True 
     st.rerun()
 
 # =========================================================================
@@ -152,39 +152,27 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # =========================================================================
-# ৬. স্মার্ট এপিআই কী রোটেশন ব্যাকএন্ড ইঞ্জিন (লিস্ট বাগ ফিক্সড)
+# ৬. আপনার নতুন Secrets মিল রেখে নিখুঁত এপিআই কী লোডার লজিক
 # =========================================================================
 def get_ai_client():
     valid_keys = []
     
-    # প্রথমে সরাসরি একক কী চেক করা হচ্ছে
+    # আপনার দেওয়া সঠিক নামগুলো চেক করা হচ্ছে
     if "GEMINI_API_KEY" in st.secrets:
-        key_val = st.secrets["GEMINI_API_KEY"]
-        if isinstance(key_val, str) and key_val.strip():
-            valid_keys.append(key_val.strip())
-        elif isinstance(key_val, list):
-            for k in key_val:
-                if isinstance(k, str) and k.strip():
-                    valid_keys.append(k.strip())
-                    
-    # মাল্টিপল কী রোটেশনের জন্য অন্যান্য কী-গুলো স্ক্যান করা হচ্ছে
-    for secret_key in st.secrets.keys():
-        if "GEMINI_API_KEY" in secret_key and secret_key != "GEMINI_API_KEY":
-            key_val = st.secrets[secret_key]
-            if isinstance(key_val, str) and key_val.strip():
-                valid_keys.append(key_val.strip())
-            elif isinstance(key_val, list):
-                for k in key_val:
-                    if isinstance(k, str) and k.strip():
-                        valid_keys.append(k.strip())
-                        
-    # ডুপ্লিকেট কী থাকলে তা ফিল্টার করে বাদ দেওয়া হচ্ছে
-    valid_keys = list(set(valid_keys))
+        k1 = st.secrets["GEMINI_API_KEY"]
+        if k1 and "AIzaSy" in k1:
+            valid_keys.append(k1.strip())
+            
+    if "GEMINI_API_KEY_2" in st.secrets:
+        k2 = st.secrets["GEMINI_API_KEY_2"]
+        if k2 and "AIzaSy" in k2:
+            valid_keys.append(k2.strip())
             
     if not valid_keys:
-        st.error("Secrets-এ কোনো বৈধ GEMINI_API_KEY (String) পাওয়া যায়নি! দয়া করে .streamlit/secrets.toml ফাইলটি চেক করুন।")
+        st.error("🔑 Secrets-এ কোনো সঠিক এপিআই কী পাওয়া যায়নি! দয়া করে ড্যাশবোর্ডের Secrets বক্সটি চেক করুন।")
         st.stop()
         
+    # র্যান্ডমলি একটি কী সিলেক্ট করে রিটার্ন করবে
     return genai.Client(api_key=random.choice(valid_keys))
 
 # =========================================================================
@@ -216,7 +204,7 @@ with st.sidebar:
             
     st.markdown("---")
 
-    # 💎 প্রিমিয়াম মেম্বারশিপ বক্স ($9 অপশন)
+    # 💎 প্রিমিয়াম মেম্বারশিপ বক্স ($9 অপশন সব সময় দৃশ্যমান)
     st.markdown("<div class='premium-sidebar-card'>", unsafe_allow_html=True)
     st.markdown(f"<p style='color: #94a3b8; margin:0; font-size:12px;'>CURRENT PLAN</p>", unsafe_allow_html=True)
     st.markdown(f"<h3 style='color: #fbbf24; margin-top:5px; margin-bottom:15px;'>👑 {st.session_state.user_tier} Tier</h3>", unsafe_allow_html=True)
@@ -243,7 +231,7 @@ with st.sidebar:
         st.rerun()
 
 # =========================================================================
-# ৮. মূল চ্যাট উইন্ডো ইন্টারফেস (১০০% রিয়েল এপিআই কানেকশন)
+# ৮. মূল চ্যাট উইন্ডো ইন্টারফেস (১০০% সচল)
 # =========================================================================
 st.markdown("<h1 style='text-align: center; color: white; margin-bottom: 0;'>🤖 OvroAI Assistant</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #64748b; margin-top: 5px;'>2026 Core Engine • Created by Refat Aoul</p>", unsafe_allow_html=True)
@@ -254,7 +242,7 @@ for role, text in st.session_state.chat_history:
     with st.chat_message(role):
         st.markdown(text)
 
-# চ্যাট ইনপুট ও প্রসেসিং ইঞ্জিন
+# চ্যাট ইনপুট ও প্রসেসিং
 if prompt := st.chat_input("OvroAI-কে কিছু জিজ্ঞেস করুন..."):
     st.chat_message("user").markdown(prompt)
     st.session_state.chat_history.append(("user", prompt))
@@ -274,6 +262,6 @@ if prompt := st.chat_input("OvroAI-কে কিছু জিজ্ঞেস ক
             
         except Exception as e:
             if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
-                st.warning("⏱️ বর্তমান লাইনটি ব্যস্ত! ব্যাকএন্ড অন্য লাইনে ট্রাই করছে, দয়া করে আবার সেন্ড করুন।")
+                st.error("⏱️ গুগলের ফ্রি লিমিট এইমাত্র শেষ হয়েছে। দয়া করে ১ মিনিট পর আরেকটি মেসেজ দিয়ে চেক করুন।")
             else:
                 st.error(f"Error: {e}")
