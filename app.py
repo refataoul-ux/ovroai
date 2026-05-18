@@ -2,6 +2,8 @@ import streamlit as st
 import os
 import random
 import time
+from google import genai
+from google.genai import types
 
 # =========================================================================
 # ১. পেজ কনফিগারেশন ও ব্রাউজার সেটিংস
@@ -14,7 +16,18 @@ st.set_page_config(
 )
 
 # =========================================================================
-# ২. সেশন স্টেট কন্ট্রোল (স্প্ল্যাশ স্ক্রিন যেন লাইফে শুধু প্রথমবার আসে)
+# ২. ২০২৬ সালের তথ্যের জন্য সুপার ইনস্ট্রাকশন ফিক্স (Refat Aoul Branding)
+# =========================================================================
+current_date_info = """
+Today's date is Monday, May 18, 2026. 
+Current Global Context for you:
+- You are OvroAI, a highly advanced AI developed by Refat Aoul from Satkhira, Bangladesh.
+- World is preparing for the 2026 FIFA World Cup.
+- Always provide information based on this 2026 timeline.
+"""
+
+# =========================================================================
+# ৩. সেশন স্টেট কন্ট্রোল (স্প্ল্যাশ স্ক্রিন যেন লাইফে শুধু প্রথমবার আসে)
 # =========================================================================
 if "intro_done" not in st.session_state:
     st.session_state.intro_done = False
@@ -26,7 +39,7 @@ if "is_logged_in" not in st.session_state:
     st.session_state.is_logged_in = False
 
 # =========================================================================
-# ৩. ২.৫ সেকেন্ডের জন্য স্প্ল্যাশ স্ক্রিন (অটো-ভ্যানিশ লজিক সহ)
+# ৪. ২.৫ সেকেন্ডের জন্য স্প্ল্যাশ স্ক্রিন (অটো-ভ্যানিশ লজিক সহ)
 # =========================================================================
 if not st.session_state.intro_done:
     placeholder = st.empty()
@@ -105,7 +118,7 @@ if not st.session_state.intro_done:
     st.rerun()
 
 # =========================================================================
-# ৪. মূল অ্যাপ্লিকেশনের গ্লোবাল স্টাইল (UI/UX ও বাংলা ফন্ট ফিক্স)
+# ৫. মূল অ্যাপ্লিকেশনের গ্লোবাল স্টাইল (UI/UX ও বাংলা ফন্ট ফিক্স)
 # =========================================================================
 st.markdown("""
     <style>
@@ -139,7 +152,23 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # =========================================================================
-# ৫. সাইডবার এবং প্রিমিয়াম মেম্বারশিপ অপশন প্যানেল
+# ৬. স্মার্ট এপিআই কী রোটেশন ব্যাকএন্ড ইঞ্জিন
+# =========================================================================
+def get_ai_client():
+    valid_keys = []
+    # আপনার Secrets-এর সব ভেরিয়েবল চেক করে GEMINI_API_KEY লেখা কী-গুলো নিয়ে নেবে
+    for secret_key in st.secrets.keys():
+        if "GEMINI_API_KEY" in secret_key:
+            valid_keys.append(st.secrets[secret_key])
+            
+    if not valid_keys:
+        st.error("Secrets-এ কোনো GEMINI_API_KEY পাওয়া যায়নি! দয়া করে App Settings চেক করুন।")
+        st.stop()
+        
+    return genai.Client(api_key=random.choice(valid_keys))
+
+# =========================================================================
+# ৭. সাইডবার এবং প্রিমিয়াম মেম্বারশিপ অপশন প্যানেল
 # =========================================================================
 with st.sidebar:
     st.markdown("<div style='padding-top: 10px;'></div>", unsafe_allow_html=True)
@@ -194,7 +223,7 @@ with st.sidebar:
         st.rerun()
 
 # =========================================================================
-# ৬. মূল চ্যাট উইন্ডো ইন্টারফেস (১০০% সচল ও দৃশ্যমান)
+# ৮. মূল চ্যাট উইন্ডো ইন্টারফেস (১০০% রিয়েল এপিআই কানেকশন)
 # =========================================================================
 st.markdown("<h1 style='text-align: center; color: white; margin-bottom: 0;'>🤖 OvroAI Assistant</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #64748b; margin-top: 5px;'>2026 Core Engine • Created by Refat Aoul</p>", unsafe_allow_html=True)
@@ -205,10 +234,26 @@ for role, text in st.session_state.chat_history:
     with st.chat_message(role):
         st.markdown(text)
 
-# চ্যাট ইনপুট
+# চ্যাট ইনপুট ও প্রসেসিং ইঞ্জিন
 if prompt := st.chat_input("OvroAI-কে কিছু জিজ্ঞেস করুন..."):
     st.chat_message("user").markdown(prompt)
     st.session_state.chat_history.append(("user", prompt))
     
     with st.chat_message("assistant"):
-        st.markdown("রেসপন্স প্রসেস হচ্ছে...")
+        try:
+            client = get_ai_client()
+            response = client.models.generate_content(
+                model='gemini-2.0-flash', 
+                contents=prompt,
+                config=types.GenerateContentConfig(system_instruction=current_date_info)
+            )
+            
+            reply = response.text
+            st.markdown(reply)
+            st.session_state.chat_history.append(("assistant", reply))
+            
+        except Exception as e:
+            if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+                st.warning("⏱️ বর্তমান লাইনটি ব্যস্ত! ব্যাকএন্ড অন্য লাইনে ট্রাই করছে, দয়া করে আবার সেন্ড করুন।")
+            else:
+                st.error(f"Error: {e}")
