@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import random
 import io
+import streamlit.components.v1 as components
 from google import genai
 from google.genai import types
 from PIL import Image
@@ -17,7 +18,7 @@ st.set_page_config(
 )
 
 # =========================================================================
-# ২. ২০২৬ সালের তথ্যের জন্য সুপার ইনস্ট্রাকশন ফিক্স (Timeline Lock)
+# ২. ২০ ২৬ সালের তথ্যের জন্য সুপার ইনস্ট্রাকশন ফিক্স
 # =========================================================================
 current_date_info = """
 Today's date is Monday, May 18, 2026. 
@@ -29,80 +30,139 @@ Always provide information based on this 2026 timeline and context. Never say yo
 """
 
 # =========================================================================
-# ৩. আল্ট্রা-মডার্ন UI/UX ডিজাইন ও সিএসএস (গিটহাব অপশন ও অনাকাঙ্ক্ষিত মেনু হাইড)
+# ৩. প্রিমিয়াম সাইবার-ডার্ক UI/UX সিএসএস ডিজাইন
 # =========================================================================
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
     
-    /* ব্যাকগ্রাউন্ড ও গ্লোবাল ফন্ট ফিক্স */
+    /* গ্লোবাল ব্যাকগ্রাউন্ড ও ফন্ট */
     html, body, [data-testid="stAppViewContainer"] {
-        font-family: 'Inter', sans-serif;
-        background-color: #0b0c10 !important;
-        color: #c5c6c7 !important;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background: radial-gradient(circle at top right, #090d16, #020408) !important;
+        color: #f1f5f9 !important;
+        scroll-behavior: smooth;
     }
     
-    /* সাইডবার সুন্দর ডার্ক থিম ও বর্ডার */
+    /* সাইডবার প্রিমিয়াম কাস্টম ডিজাইন */
     [data-testid="stSidebar"] {
-        background-color: #1f2833 !important;
-        border-right: 1px solid #1f2833 !important;
+        background-color: #05070c !important;
+        border-right: 1px solid rgba(99, 102, 241, 0.1) !important;
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
     }
     
     [data-testid="stSidebarNav"] { display: block !important; }
     
-    /* সাইডবার ফিরিয়ে আনার গোল সুন্দর বাটন ফিক্স */
+    /* সাইডবার ফিরিয়ে আনার ফ্লোটিং নিয়ন বাটন */
     [data-testid="stSidebarCollapseButton"] {
         display: flex !important;
         visibility: visible !important;
-        background-color: #1f2833 !important;
-        border: 1px solid #66fcf1 !important;
-        border-radius: 50% !important;
-        color: #66fcf1 !important;
+        position: fixed !important;
+        left: 20px !important;
+        top: 20px !important;
+        background: rgba(10, 15, 30, 0.7) !important;
+        border: 1px solid rgba(99, 102, 241, 0.5) !important;
+        border-radius: 14px !important;
+        color: #6366f1 !important;
+        backdrop-filter: blur(12px) !important;
         z-index: 999999 !important;
-        box-shadow: 0 0 10px rgba(102, 252, 241, 0.3) !important;
+        box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    [data-testid="stSidebarCollapseButton"]:hover {
+        background: #6366f1 !important;
+        color: #ffffff !important;
+        box-shadow: 0 0 25px rgba(99, 102, 241, 0.6) !important;
+        transform: scale(1.08);
     }
     
-    /* 🔴 জাহান ভাই, এই কোডটি ডান কোণার গিটহাব আইকন ও সমস্ত ডিফল্ট মেনু চিরতরে হাইড করে দেবে */
-    [data-testid="stHeader"], header, footer, div.stDeployButton, [data-testid="stDecoration"], #MainMenu {
+    /* ডিফল্ট মেনু, ফুটার ও গিটহাব লোগো চিরতরে ভ্যানিশ */
+    div.stDeployButton, [data-testid="stDecoration"], footer, #MainMenu {
         visibility: hidden !important;
         display: none !important;
     }
+    [data-testid="stHeader"] { background: transparent !important; }
+    [data-testid="stHeader"] svg { display: none !important; }
 
-    /* চ্যাট ইনপুট বক্সের প্রিমিয়াম UI/UX ডিজাইন */
+    /* চ্যাট ইনপুট বক্সের আল্ট্রা-মডার্ন লুক */
     [data-testid="stChatInput"] {
-        border-radius: 20px !important;
-        background-color: #1f2833 !important;
-        border: 1px solid #45f3ff !important;
-        box-shadow: 0 0 15px rgba(69, 243, 255, 0.15) !important;
+        border-radius: 16px !important;
+        background-color: #090d16 !important;
+        border: 1px solid rgba(99, 102, 241, 0.2) !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
         color: #ffffff !important;
-    }
-    
-    /* বাটনগুলোর আধুনিক ডিজাইন ও হোভার ইফেক্ট */
-    .stButton>button {
-        background-color: #1f2833 !important;
-        color: #66fcf1 !important;
-        border: 1px solid #66fcf1 !important;
-        border-radius: 8px !important;
         transition: all 0.3s ease !important;
     }
+    
+    /* সাইডবার বাটন ও গ্লাস-মরফিজম ইনপুট */
+    .stButton>button {
+        background: linear-gradient(135deg, #0f111a, #18132b) !important;
+        color: #a5b4fc !important;
+        border: 1px solid rgba(99, 102, 241, 0.25) !important;
+        border-radius: 12px !important;
+        font-weight: 600 !important;
+        padding: 10px 20px !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
     .stButton>button:hover {
-        background-color: #66fcf1 !important;
-        color: #0b0c10 !important;
-        box-shadow: 0 0 10px rgba(102, 252, 241, 0.5) !important;
+        background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+        color: #ffffff !important;
+        box-shadow: 0 0 20px rgba(99, 102, 241, 0.4) !important;
+        transform: translateY(-2px);
     }
     
-    /* টেক্সট ইনপুট বক্সের স্টাইল */
     .stTextInput>div>div>input {
-        background-color: #0b0c10 !important;
+        background-color: rgba(5, 7, 12, 0.6) !important;
         color: #ffffff !important;
-        border: 1px solid #45f3ff !important;
-        border-radius: 8px !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 12px !important;
+    }
+    .stTextInput>div>div>input:focus {
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 15px rgba(99, 102, 241, 0.2) !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
 # =========================================================================
-# ৪. ৫টি এপিআই কী-র লিস্ট লোড করা
+# ৪. 🔮 ম্যাজিক জাভাস্ক্রিপ্ট ইনজেকশন (স্মুথ স্লাইড ও ইউজার এক্সপেরিয়েন্স এনহ্যান্সার)
+# =========================================================================
+# এই স্ক্রিপ্টটি ব্রাউজার লেভেলে রান করবে এবং সাইডবার বন্ধ/খোলার সময় থ্রিডি স্মুথ ইলাস্টিক মোশন তৈরি করবে
+components.html("""
+<script>
+    const shadowRootFix = () => {
+        // স্ট্রিমলিটের মূল সাইডবার এলিমেন্ট খুঁজে বের করা
+        const sidebar = window.parent.document.querySelector('[data-testid="stSidebar"]');
+        const mainContent = window.parent.document.querySelector('[data-testid="stAppViewContainer"]');
+        const collapseBtn = window.parent.document.querySelector('[data-testid="stSidebarCollapseButton"]');
+        
+        if (sidebar && mainContent) {
+            // সাইডবারে স্মুথ জাভাস্ক্রিপ্ট ট্রানজিশন অ্যানিমেশন অ্যাড করা
+            sidebar.style.transition = "transform 0.45s cubic-bezier(0.25, 1, 0.5, 1)";
+            mainContent.style.transition = "margin-left 0.45s cubic-bezier(0.25, 1, 0.5, 1)";
+            
+            // চ্যাট ইনপুট ফোকাস অ্যানিমেশন গ্লো
+            const chatInput = window.parent.document.querySelector('[data-testid="stChatInput"]');
+            if (chatInput) {
+                chatInput.addEventListener('focusin', () => {
+                    chatInput.style.borderColor = "#6366f1";
+                    chatInput.style.boxShadow = "0 0 25px rgba(99, 102, 241, 0.35)";
+                });
+                chatInput.addEventListener('focusout', () => {
+                    chatInput.style.borderColor = "rgba(99, 102, 241, 0.2)";
+                    chatInput.style.boxShadow = "0 10px 30px rgba(0, 0, 0, 0.5)";
+                });
+            }
+        }
+    };
+    
+    // পেজ লোড হওয়ার পর স্ক্রিপ্টটি সক্রিয় করার টাইমার
+    setTimeout(shadowRootFix, 1000);
+</script>
+""", height=0, width=0)
+
+# =========================================================================
+# ৫. ৫টি এপিআই কী-র লিস্ট লোড করা
 # =========================================================================
 def get_all_keys():
     valid_keys = []
@@ -117,7 +177,7 @@ def get_all_keys():
     return valid_keys
 
 # =========================================================================
-# ৫. স্থায়ী লগইন সিস্টেম (পেইজ রিলোড বা রিফ্রেশ দিলেও লগআউট হবে না)
+# ৬. স্থায়ী লগইন সিস্টেম (পেইজ রিলোড বা রিফ্রেশ দিলেও লগআউট হবে না)
 # =========================================================================
 if "is_logged_in" not in st.session_state:
     params = st.query_params
@@ -129,27 +189,28 @@ if "is_logged_in" not in st.session_state:
         st.session_state.user_tier = "Free"
 
 # =========================================================================
-# ৬. সেশন স্টেট ইনিশিয়ালাইজেশন
+# ৭. সেশন স্টেট ইনিশিয়ালাইজেশন
 # =========================================================================
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
 # =========================================================================
-# ৭. সাইডবার ডিজাইন ও কন্ট্রোল
+# ৮. সাইডবার ডিজাইন ও কন্ট্রোল
 # =========================================================================
 with st.sidebar:
-    st.markdown("<h2 style='color: #66fcf1; font-size: 26px; font-weight: 600; margin-bottom: 0px;'>OvroAI 2026</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #a4a7ab; font-size: 13px;'>Global Assistant Platform</p>", unsafe_allow_html=True)
-    st.markdown("<hr style='border-color: #45f3ff; margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
+    st.markdown("<div style='padding-top: 30px;'></div>", unsafe_allow_html=True)
+    st.markdown("<h2 style='color: #6366f1; font-size: 30px; font-weight: 700; margin-bottom: 0px; letter-spacing: -0.5px;'>OvroAI 2026</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #475569; font-size: 13px; font-weight: 500;'>Next-Gen Global Platform</p>", unsafe_allow_html=True)
+    st.markdown("<hr style='border-color: rgba(99, 102, 241, 0.15); margin-top: 5px; margin-bottom: 25px;'>", unsafe_allow_html=True)
     
     if not st.session_state.is_logged_in:
-        # 🎯 এখানে বাংলা লেখার ফন্ট ফিক্স করে দেওয়া হয়েছে যাতে অনাকাঙ্ক্ষিত কিছু না আসে
-        st.markdown("<b style='color: #ffffff;'>🔒 লগইন প্যানেল (ঐচ্ছিক)</b>", unsafe_allow_html=True)
-        st.markdown("<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True)
+        st.markdown("<b style='color: #64748b; font-size: 14px;'>🔒 লগইন প্যানেল (ঐচ্ছিক)</b>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
         
-        user = st.text_input("Username", placeholder="username", label_visibility="collapsed")
-        pwd = st.text_input("Password", type="password", placeholder="password", label_visibility="collapsed")
+        user = st.text_input("Username", placeholder="Username", label_visibility="collapsed")
+        pwd = st.text_input("Password", type="password", placeholder="Password", label_visibility="collapsed")
         
+        st.markdown("<div style='margin-bottom: 5px;'></div>", unsafe_allow_html=True)
         col_login, col_reg = st.columns(2)
         with col_login:
             if st.button("Login", use_container_width=True):
@@ -164,24 +225,25 @@ with st.sidebar:
         with col_reg:
             st.button("Register", use_container_width=True)
     else:
-        tier_color = "#FFD700" if st.session_state.user_tier == "Premium" else "#00FF00"
-        st.markdown(f"Status: <b style='color:{tier_color};'>{st.session_state.user_tier} User</b>", unsafe_allow_html=True)
-        st.info("✅ লগইন সেশন সক্রিয় আছে।")
+        tier_color = "#fbbf24" if st.session_state.user_tier == "Premium" else "#34d399"
+        st.markdown(f"<div style='background: rgba(99, 102, 241, 0.05); padding: 14px; border-radius: 12px; border: 1px solid rgba(99, 102, 241, 0.15);'>Status: <b style='color:{tier_color};'>{st.session_state.user_tier} User</b><br><span style='font-size:12px; color:#475569;'>✅ সেশন সুরক্ষিত ও সক্রিয়।</span></div>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
         if st.button("Logout", use_container_width=True):
             st.session_state.is_logged_in = False
             st.query_params.clear()
             st.rerun()
 
-    st.markdown("<hr style='border-color: #333;'>", unsafe_allow_html=True)
+    st.markdown("<hr style='border-color: rgba(255,255,255,0.03); margin-top: 25px; margin-bottom: 25px;'>", unsafe_allow_html=True)
     if st.button("➕ New Chat", use_container_width=True):
         st.session_state.chat_history = []
         st.rerun()
 
 # =========================================================================
-# ৮. মূল চ্যাট উইন্ডো ইন্টারফেস (UI/UX এনহ্যান্সড)
+# ৯. মূল চ্যাট উইন্ডো ইন্টারফেস (Ultra UI/UX)
 # =========================================================================
-st.markdown("<h1 style='text-align: center; color: #66fcf1; font-weight: 600; letter-spacing: 1px; margin-bottom: 0px;'>🤖 OvroAI</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #a4a7ab; font-size: 14px;'>Global Assistant • Powered by 5x Deep Failover Key Routing</p>", unsafe_allow_html=True)
+st.markdown("<div style='padding-top: 25px;'></div>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #ffffff; font-weight: 700; font-size: 46px; margin-bottom: 0px; background: linear-gradient(to right, #ffffff, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>🤖 OvroAI</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #475569; font-size: 15px; font-weight: 500; margin-top: 5px; letter-spacing: 0.5px;'>Intelligence Redefined • 5x Smart Failover Core</p>", unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
 # পুরোনো চ্যাট হিস্ট্রি স্ক্রিনে রেন্ডার করা
@@ -190,7 +252,7 @@ for role, text in st.session_state.chat_history:
         st.markdown(text)
 
 # =========================================================================
-# ৯. চ্যাট ইনপুট ও ট্রু-ফেইলওভার লুপ প্রসেসিং (True Fallback Engine)
+# ১০. চ্যাট ইনপুট ও ট্রু-ফেইলওভার লুপ প্রসেসিং (True Fallback Engine)
 # =========================================================================
 if prompt := st.chat_input("Ask OvroAI anything..."):
     st.chat_message("user").markdown(prompt)
@@ -199,7 +261,6 @@ if prompt := st.chat_input("Ask OvroAI anything..."):
     with st.chat_message("assistant"):
         all_keys = get_all_keys()
         
-        # কী-র লিস্টটি রেন্ডমাইজ করা যাতে সবগুলোর উপর সমান লোড পড়ে
         shuffled_keys = all_keys.copy()
         random.shuffle(shuffled_keys)
         
