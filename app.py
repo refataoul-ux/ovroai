@@ -29,39 +29,76 @@ Always provide information based on this 2026 timeline and context. Never say yo
 """
 
 # =========================================================================
-# ৩. আল্ট্রা-স্টাইলিশ UI/UX, স্লাইড অ্যানিমেশন এবং গিটহাব আইকন রিমুভাল সিএসএস
+# ৩. ৩ সেকেন্ডের আল্ট্রা-স্টাইলিশ ইন্ট্রো স্ক্রিন এবং প্রিমিয়াম UI/UX সিএসএস
 # =========================================================================
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
     
-    /* গ্লোবাল ব্যাকগ্রাউন্ড ও ফন্ট */
+    /* গ্লোবাল থিম */
     html, body, [data-testid="stAppViewContainer"] {
         font-family: 'Plus Jakarta Sans', sans-serif;
         background: radial-gradient(circle at top right, #090d16, #020408) !important;
         color: #f1f5f9 !important;
     }
+
+    /* ⏳ ম্যাজিক স্প্ল্যাশ স্ক্রিন (ইন্ট্রো অ্যানিমেশন) */
+    #intro-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: #020408;
+        z-index: 9999999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        transition: opacity 1s ease, visibility 1s;
+    }
     
-    /* 🎯 সাইডবার স্লাইড ট্রানজিশন এবং প্রিমিয়াম অ্যানিমেশন */
+    .intro-logo {
+        font-size: 60px;
+        font-weight: 700;
+        background: linear-gradient(45deg, #6366f1, #a855f7);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: pulseGlow 2s infinite alternate;
+        margin-bottom: 10px;
+    }
+    
+    .intro-credits {
+        font-size: 18px;
+        color: #94a3b8;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        font-weight: 500;
+        opacity: 0;
+        animation: fadeInUp 1.5s forwards 0.5s;
+    }
+    
+    .creator-name {
+        color: #6366f1;
+        font-weight: 700;
+        text-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+    }
+
+    @keyframes pulseGlow {
+        0% { transform: scale(0.98); filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.3)); }
+        100% { transform: scale(1.02); filter: drop-shadow(0 0 30px rgba(168, 85, 247, 0.7)); }
+    }
+    @keyframes fadeInUp {
+        to { opacity: 1; transform: translateY(-5px); }
+    }
+
+    /* 🎯 সাইডবার স্লাইড ট্রানজিশন ও স্টাইল */
     [data-testid="stSidebar"] {
         background-color: #05070c !important;
         border-right: 1px solid rgba(99, 102, 241, 0.1) !important;
         transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
-        will-change: transform;
-    }
-    
-    /* সাইডবার ভেতরের কন্টেন্ট অ্যানিমেশন */
-    [data-testid="stSidebarUserContent"] {
-        animation: fadeIn 0.5s ease-in-out;
-    }
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateX(-10px); }
-        to { opacity: 1; transform: translateX(0); }
     }
     
     [data-testid="stSidebarNav"] { display: block !important; }
     
-    /* 🎯 সাইডবার ফিরিয়ে আনার ফ্লোটিং গ্লোয়িং নিয়ন বাটন */
+    /* 🎯 স্লাইড বাটন ফিরিয়ে আনার জন্য আল্টিমেট ফিক্স (সব সময় দৃশ্যমান থাকবে) */
     [data-testid="stSidebarCollapseButton"] {
         display: flex !important;
         visibility: visible !important;
@@ -73,7 +110,7 @@ st.markdown("""
         border-radius: 12px !important;
         color: #6366f1 !important;
         backdrop-filter: blur(12px) !important;
-        z-index: 999999 !important;
+        z-index: 999998 !important;
         box-shadow: 0 0 15px rgba(99, 102, 241, 0.4) !important;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
@@ -84,20 +121,26 @@ st.markdown("""
         transform: scale(1.08);
     }
     
-    /* 🔴 ডান কোণার গিটহাব আইকন, থ্রি-ডট মেনু এবং টপ বার সম্পূর্ণ ভ্যানিশ করার মেগা ফিক্স */
-    [data-testid="stHeader"], header, footer, div.stDeployButton, [data-testid="stDecoration"], #MainMenu {
+    /* 🔴 ডান কোণার গিটহাব আইকন ও থ্রি-ডট মেনু রিমুভাল (সাইডবার বাটন না ভেঙে) */
+    [data-testid="stHeader"] {
+        background: transparent !important;
+        z-index: 999;
+    }
+    /* হেডার এলিমেন্টের ভেতরের গিটহাব এবং অতিরিক্ত মেনু বাটন শুধু হাইড করা */
+    [data-testid="stHeader"] > div:first-child {
+        display: none !important;
+    }
+    div.stDeployButton, [data-testid="stDecoration"], footer, #MainMenu {
         visibility: hidden !important;
         display: none !important;
-        opacity: 0 !important;
     }
-    
-    /* চ্যাট ইনপুট বক্সের মডার্ন গ্লোয়িং লুক */
+
+    /* চ্যাট ইনপুট বক্স ও বাটন */
     [data-testid="stChatInput"] {
         border-radius: 16px !important;
         background-color: #090d16 !important;
         border: 1px solid rgba(99, 102, 241, 0.2) !important;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
-        color: #ffffff !important;
         transition: all 0.3s ease !important;
     }
     [data-testid="stChatInput"]:focus-within {
@@ -105,14 +148,13 @@ st.markdown("""
         box-shadow: 0 0 25px rgba(99, 102, 241, 0.3) !important;
     }
     
-    /* সাইডবার বাটনগুলোর প্রিমিয়াম স্টাইল */
     .stButton>button {
         background: linear-gradient(135deg, #0f111a, #18132b) !important;
         color: #a5b4fc !important;
         border: 1px solid rgba(99, 102, 241, 0.25) !important;
         border-radius: 12px !important;
         font-weight: 600 !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        transition: all 0.3s ease !important;
     }
     .stButton>button:hover {
         background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
@@ -120,39 +162,32 @@ st.markdown("""
         box-shadow: 0 0 20px rgba(99, 102, 241, 0.4) !important;
         transform: translateY(-2px);
     }
-    
-    .stTextInput>div>div>input {
-        background-color: rgba(5, 7, 12, 0.6) !important;
-        color: #ffffff !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        border-radius: 12px !important;
-    }
     </style>
+
+    <div id="intro-overlay">
+        <div class="intro-logo">🤖 OvroAI</div>
+        <div class="intro-credits">Created by <span class="creator-name">Rifat Awal</span></div>
+    </div>
     """, unsafe_allow_html=True)
 
 # =========================================================================
-# ৪. 🔮 জাভাস্ক্রিপ্ট ইনজেকশন (মেনু ও অ্যানিমেশন ডিরেক্ট ব্রাউজার ফিক্স)
+# ৪. 🔮 জাভাস্ক্রিপ্ট ইন্জেকশন (৩ সেকেন্ড পর ইন্ট্রো হাইড করার কন্ট্রোল)
 # =========================================================================
 st.components.v1.html("""
 <script>
-    const applyPremiumEffects = () => {
+    const runIntroAndFixes = () => {
         const parentDoc = window.parent.document;
         
-        // ডান কোণার গিটহাব আইকন সম্বলিত হেডার বার চিরতরে মুছে ফেলার জাভাস্ক্রিপ্ট সিকিউরিটি
-        const header = parentDoc.querySelector('[data-testid="stHeader"]');
-        if (header) {
-            header.style.display = 'none';
-            header.style.visibility = 'hidden';
-        }
-        
-        // সাইডবারের ট্রানজিশন আরও স্মুথ ও কাস্টমাইজ করা
-        const sidebar = parentDoc.querySelector('[data-testid="stSidebar"]');
-        if (sidebar) {
-            sidebar.style.transition = "transform 0.45s cubic-bezier(0.25, 1, 0.5, 1)";
+        // ৩ সেকেন্ড (৩০০০ মিলিমেকেন্ড) পর স্টাইলিশ উপায়ে ইন্ট্রো স্ক্রিন হাইড করা
+        const intro = parentDoc.getElementById('intro-overlay');
+        if (intro) {
+            setTimeout(() => {
+                intro.style.opacity = '0';
+                setTimeout(() => { intro.style.display = 'none'; }, 1000);
+            }, 3000);
         }
     };
-    // অ্যাপ লোড হওয়ার পর এবং প্রতি ১ সেকেন্ড পর পর রান করবে যাতে গিটহাব লোগো ফিরে না আসে
-    setInterval(applyPremiumEffects, 1000);
+    runIntroAndFixes();
 </script>
 """, height=0, width=0)
 
@@ -172,7 +207,7 @@ def get_all_keys():
     return valid_keys
 
 # =========================================================================
-# ৬. স্থায়ী লগইন সিস্টেম (পেইজ রিলোড বা রিফ্রেশ দিলেও লগআউট হবে না)
+# ৬. স্থায়ী লগইন সিস্টেম
 # =========================================================================
 if "is_logged_in" not in st.session_state:
     params = st.query_params
@@ -254,7 +289,6 @@ if prompt := st.chat_input("Ask OvroAI anything..."):
 
     with st.chat_message("assistant"):
         all_keys = get_all_keys()
-        
         shuffled_keys = all_keys.copy()
         random.shuffle(shuffled_keys)
         
