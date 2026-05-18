@@ -29,41 +29,74 @@ Always provide information based on this 2026 timeline and context. Never say yo
 """
 
 # =========================================================================
-# ৩. সিএসএস ডিজাইন (সাইডবার ফিরিয়ে আনার বাটন এবং ইউজার ইন্টারফেস ফিক্স)
+# ৩. আল্ট্রা-মডার্ন UI/UX ডিজাইন ও সিএসএস (গিটহাব অপশন ও অনাকাঙ্ক্ষিত মেনু হাইড)
 # =========================================================================
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
     
+    /* ব্যাকগ্রাউন্ড ও গ্লোবাল ফন্ট ফিক্স */
     html, body, [data-testid="stAppViewContainer"] {
         font-family: 'Inter', sans-serif;
-        background-color: #131314 !important;
+        background-color: #0b0c10 !important;
+        color: #c5c6c7 !important;
     }
     
-    /* সাইডবার মেনু বাটন বা কোলাপ্সড আইকন যাতে স্ক্রিন থেকে চিরতরে হারিয়ে না যায় */
+    /* সাইডবার সুন্দর ডার্ক থিম ও বর্ডার */
+    [data-testid="stSidebar"] {
+        background-color: #1f2833 !important;
+        border-right: 1px solid #1f2833 !important;
+    }
+    
     [data-testid="stSidebarNav"] { display: block !important; }
     
-    /* সাইডবার ভেতরে চলে গেলে তাকে স্ক্রিনে ফিরিয়ে আনার গোল সুন্দর বাটন ফিক্স */
+    /* সাইডবার ফিরিয়ে আনার গোল সুন্দর বাটন ফিক্স */
     [data-testid="stSidebarCollapseButton"] {
         display: flex !important;
         visibility: visible !important;
-        background-color: #1e1f20 !important;
-        border: 1px solid #11caa0 !important;
+        background-color: #1f2833 !important;
+        border: 1px solid #66fcf1 !important;
         border-radius: 50% !important;
-        color: #11caa0 !important;
+        color: #66fcf1 !important;
         z-index: 999999 !important;
+        box-shadow: 0 0 10px rgba(102, 252, 241, 0.3) !important;
     }
     
-    /* স্ট্রিমলিটের অপ্রয়োজনীয় ডেকরেশন ও গিটহাব লোগো হাইড করা */
-    div.stDeployButton, [data-testid="stDecoration"], footer {
+    /* 🔴 জাহান ভাই, এই কোডটি ডান কোণার গিটহাব আইকন ও সমস্ত ডিফল্ট মেনু চিরতরে হাইড করে দেবে */
+    [data-testid="stHeader"], header, footer, div.stDeployButton, [data-testid="stDecoration"], #MainMenu {
         visibility: hidden !important;
         display: none !important;
     }
 
+    /* চ্যাট ইনপুট বক্সের প্রিমিয়াম UI/UX ডিজাইন */
     [data-testid="stChatInput"] {
-        border-radius: 30px !important;
-        background-color: #1e1f20 !important;
-        border: 1px solid #444746 !important;
+        border-radius: 20px !important;
+        background-color: #1f2833 !important;
+        border: 1px solid #45f3ff !important;
+        box-shadow: 0 0 15px rgba(69, 243, 255, 0.15) !important;
+        color: #ffffff !important;
+    }
+    
+    /* বাটনগুলোর আধুনিক ডিজাইন ও হোভার ইফেক্ট */
+    .stButton>button {
+        background-color: #1f2833 !important;
+        color: #66fcf1 !important;
+        border: 1px solid #66fcf1 !important;
+        border-radius: 8px !important;
+        transition: all 0.3s ease !important;
+    }
+    .stButton>button:hover {
+        background-color: #66fcf1 !important;
+        color: #0b0c10 !important;
+        box-shadow: 0 0 10px rgba(102, 252, 241, 0.5) !important;
+    }
+    
+    /* টেক্সট ইনপুট বক্সের স্টাইল */
+    .stTextInput>div>div>input {
+        background-color: #0b0c10 !important;
+        color: #ffffff !important;
+        border: 1px solid #45f3ff !important;
+        border-radius: 8px !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -102,15 +135,18 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
 # =========================================================================
-# ७. সাইডবার ডিজাইন ও কন্ট্রোল
+# ৭. সাইডবার ডিজাইন ও কন্ট্রোল
 # =========================================================================
 with st.sidebar:
-    st.markdown("<h2 style='color: #e3e3e3; font-size: 24px;'>OvroAI 2026</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #888; font-size: 12px;'>Global Assistant Platform</p>", unsafe_allow_html=True)
-    st.markdown("<hr style='border-color: #333;'>", unsafe_allow_html=True)
+    st.markdown("<h2 style='color: #66fcf1; font-size: 26px; font-weight: 600; margin-bottom: 0px;'>OvroAI 2026</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #a4a7ab; font-size: 13px;'>Global Assistant Platform</p>", unsafe_allow_html=True)
+    st.markdown("<hr style='border-color: #45f3ff; margin-top: 5px; margin-bottom: 15px;'>", unsafe_allow_html=True)
     
     if not st.session_state.is_logged_in:
-        st.markdown("🔒 **লগইন প্যানেল (অপショナル)**")
+        # 🎯 এখানে বাংলা লেখার ফন্ট ফিক্স করে দেওয়া হয়েছে যাতে অনাকাঙ্ক্ষিত কিছু না আসে
+        st.markdown("<b style='color: #ffffff;'>🔒 লগইন প্যানেল (ঐচ্ছিক)</b>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True)
+        
         user = st.text_input("Username", placeholder="username", label_visibility="collapsed")
         pwd = st.text_input("Password", type="password", placeholder="password", label_visibility="collapsed")
         
@@ -130,7 +166,7 @@ with st.sidebar:
     else:
         tier_color = "#FFD700" if st.session_state.user_tier == "Premium" else "#00FF00"
         st.markdown(f"Status: <b style='color:{tier_color};'>{st.session_state.user_tier} User</b>", unsafe_allow_html=True)
-        st.info("✅ লগইন সেশন সক্রিয়।")
+        st.info("✅ লগইন সেশন সক্রিয় আছে।")
         if st.button("Logout", use_container_width=True):
             st.session_state.is_logged_in = False
             st.query_params.clear()
@@ -142,12 +178,13 @@ with st.sidebar:
         st.rerun()
 
 # =========================================================================
-# ৮. মূল চ্যাট উইন্ডো ইন্টারফেস
+# ৮. মূল চ্যাট উইন্ডো ইন্টারফেস (UI/UX এনহ্যান্সড)
 # =========================================================================
-st.markdown("<h2 style='text-align: center; color: #e3e3e3; font-weight: 500;'>🤖 OvroAI - Global Assistant</h2>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #888;'>Powered by 5x Deep Failover Key Routing</p>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #66fcf1; font-weight: 600; letter-spacing: 1px; margin-bottom: 0px;'>🤖 OvroAI</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #a4a7ab; font-size: 14px;'>Global Assistant • Powered by 5x Deep Failover Key Routing</p>", unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
+# পুরোনো চ্যাট হিস্ট্রি স্ক্রিনে রেন্ডার করা
 for role, text in st.session_state.chat_history:
     with st.chat_message(role):
         st.markdown(text)
@@ -169,10 +206,9 @@ if prompt := st.chat_input("Ask OvroAI anything..."):
         response_success = False
         last_error_message = ""
         
-        # রিফাত ভাইয়ের চাহিদামতো নিখুঁত লুপ মেকানিজম
+        # নিখুঁত লুপ মেকানিজম (ব্যস্ত থাকলে অটো পরের কী ট্রাই করবে)
         for current_key in shuffled_keys:
             try:
-                # এই কী দিয়ে চেষ্টা করা হচ্ছে, ব্যস্ত থাকলে কোনো এরর স্ক্রিনে না দেখিয়ে সরাসরি পরেরটায় চলে যাবে
                 client = genai.Client(api_key=current_key)
                 response = client.models.generate_content(
                     model='gemini-2.0-flash', 
@@ -184,19 +220,17 @@ if prompt := st.chat_input("Ask OvroAI anything..."):
                 st.markdown(reply)
                 st.session_state.chat_history.append(("assistant", reply))
                 response_success = True
-                break  # যেকোনো একটা কী কাজ করে ফেললে লুপ সাথে সাথে বন্ধ হয়ে যাবে
+                break  
                 
             except Exception as e:
-                # ব্যস্ততার এরর (429/RESOURCE_EXHAUSTED) হলে কোডটি স্ক্রিনে কিচ্ছু দেখাবে না, সাইলেন্টলি পরের কী ট্রাই করবে
                 if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
                     last_error_message = "RESOURCE_EXHAUSTED"
                     continue
                 else:
-                    # অন্য কোনো টেকনিক্যাল এরর হলে সেটা ট্র্যাক করার জন্য সেভ করবে
                     last_error_message = str(e)
                     continue
         
-        # যদি ৫টি লাইনের একটি লাইনও সফল হতে না পারে (সবগুলোই যদি একসাথে ব্লক থাকে)
+        # সব কী একই সাথে ব্লকড থাকলে সেফটি নোটিশ
         if not response_success:
             if last_error_message == "RESOURCE_EXHAUSTED":
                 st.info("⏱️ ওভ্রোআই-এর ৫টি ফ্রি ব্যাকএন্ড লাইনের সবগুলোই এই মুহূর্তে অত্যন্ত ব্যস্ত। অনুগ্রহ করে ৩০ সেকেন্ড পর আবার চেষ্টা করুন।")
