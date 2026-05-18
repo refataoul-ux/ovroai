@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import random
+import time
 from google import genai
 from google.genai import types
 
@@ -26,150 +27,11 @@ Current Global Context for you:
 """
 
 # =========================================================================
-# ৩. ১০০% সুরক্ষিত আল্ট্রা-স্টাইলিশ স্প্ল্যাশ ইন্ট্রো ও UI/UX সিএসএস (কোন f-string বাগ নেই)
+# ৩. সেশন স্টেট ইনিশিয়ালাইজেশন (স্প্ল্যাশ স্ক্রিন যেন শুধু প্রথমবার আসে)
 # =========================================================================
-st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Hind+Siliguri:wght@400;500;600;700&display=swap');
-    
-    /* গ্লোবাল ডার্ক থিম ও বাংলা ফন্ট ফিক্স */
-    html, body, [data-testid="stAppViewContainer"], [data-testid="stSidebar"] {
-        font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif !important;
-        background: radial-gradient(circle at top right, #090d16, #020408) !important;
-        color: #f1f5f9 !important;
-    }
+if "intro_shown" not in st.session_state:
+    st.session_state.intro_shown = False
 
-    /* ⏳ ৩ সেকেন্ডের স্প্ল্যাশ ইন্ট্রো স্ক্রিন */
-    #intro-overlay {
-        position: fixed;
-        top: 0; left: 0; width: 100vw; height: 100vh;
-        background: #020408;
-        z-index: 9999999;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        transition: opacity 1s ease-in-out, visibility 1s;
-    }
-    
-    .intro-logo {
-        font-size: 70px;
-        font-weight: 700;
-        background: linear-gradient(45deg, #6366f1, #a855f7);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        animation: pulseGlow 2s infinite alternate;
-        margin-bottom: 10px;
-    }
-    
-    .intro-credits {
-        font-size: 20px;
-        color: #94a3b8;
-        letter-spacing: 3px;
-        text-transform: uppercase;
-        opacity: 0;
-        animation: fadeInUp 1.5s forwards 0.5s;
-    }
-    
-    .creator-name {
-        color: #6366f1;
-        font-weight: 700;
-        text-shadow: 0 0 15px rgba(99, 102, 241, 0.6);
-    }
-
-    @keyframes pulseGlow {
-        0% { transform: scale(0.97); filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.4)); }
-        100% { transform: scale(1.03); filter: drop-shadow(0 0 35px rgba(168, 85, 247, 0.7)); }
-    }
-    @keyframes fadeInUp {
-        to { opacity: 1; transform: translateY(-5px); }
-    }
-
-    /* 🎯 সাইডবার ও স্লাইড বাটন পুনরুদ্ধার */
-    [data-testid="stSidebar"] {
-        background-color: #05070c !important;
-        border-right: 1px solid rgba(99, 102, 241, 0.15) !important;
-    }
-    
-    /* সাইডবার ফিরিয়ে আনার নেভিগেশন বাটন পিনড */
-    [data-testid="stSidebarCollapseButton"] {
-        display: flex !important;
-        visibility: visible !important;
-        position: fixed !important;
-        left: 20px !important;
-        top: 20px !important;
-        background: rgba(10, 15, 30, 0.9) !important;
-        border: 1px solid #6366f1 !important;
-        border-radius: 12px !important;
-        color: #6366f1 !important;
-        z-index: 999998 !important;
-        box-shadow: 0 0 15px rgba(99, 102, 241, 0.4) !important;
-    }
-
-    /* 🔴 ডান কোণার গিটহাব আইকন ক্লিনিং */
-    div[data-testid="stHeader"] > div:first-child {
-        display: none !important;
-    }
-    div.stDeployButton, [data-testid="stDecoration"], footer, #MainMenu {
-        visibility: hidden !important;
-        display: none !important;
-    }
-
-    /* প্রিমিয়াম টায়ার ডিজাইন */
-    .tier-box {
-        background: rgba(99, 102, 241, 0.08) !important;
-        border: 1px solid rgba(99, 102, 241, 0.25) !important;
-        padding: 15px;
-        border-radius: 15px;
-        margin: 10px 0;
-        text-align: center;
-    }
-
-    /* চ্যাট ইনপুট */
-    [data-testid="stChatInput"] {
-        border-radius: 16px !important;
-        background-color: #090d16 !important;
-        border: 1px solid rgba(99, 102, 241, 0.25) !important;
-    }
-    </style>
-
-    <div id="intro-overlay">
-        <div class="intro-logo">🤖 OvroAI</div>
-        <div class="intro-credits">Created by <span class="creator-name">Refat Aoul</span></div>
-    </div>
-
-    <script>
-        // ৩ সেকেন্ড পর স্প্ল্যাশ স্ক্রিন হাইড করার জাভাস্ক্রিপ্ট
-        setTimeout(function() {
-            var intro = window.parent.document.getElementById('intro-overlay');
-            if (intro) {
-                intro.style.opacity = '0';
-                setTimeout(function() { intro.style.display = 'none'; }, 1000);
-            }
-        }, 3000);
-    </script>
-    """, unsafe_allow_html=True)
-
-# =========================================================================
-# ৪. স্মার্ট এপিআই কী ডিটেকশন ও রোটেশন (আপনার সিক্রেটস ফরম্যাট অনুযায়ী)
-# =========================================================================
-def get_ai_client():
-    valid_keys = []
-    # আপনার স্ক্রিনশট অনুযায়ী আলাদা আলাদা নামের কী-গুলো স্বয়ংক্রিয়ভাবে খুঁজে নেবে
-    for secret_key in st.secrets.keys():
-        if "GEMINI_API_KEY" in secret_key:
-            valid_keys.append(st.secrets[secret_key])
-            
-    if not valid_keys:
-        st.error("Secrets-এ কোনো GEMINI_API_KEY পাওয়া যায়নি! দয়া করে App Settings চেক করুন।")
-        st.stop()
-        
-    # র্যান্ডমলি একটি কী সিলেক্ট করে রিটার্ন করবে (Failover Automation)
-    return genai.Client(api_key=random.choice(valid_keys))
-
-# =========================================================================
-# ৫. স্থায়ী লগইন ও সাবস্ক্রিপশন স্টেট ম্যানেজমেন্ট
-# =========================================================================
 if "is_logged_in" not in st.session_state:
     params = st.query_params
     if params.get("login") == "true":
@@ -183,7 +45,130 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
 # =========================================================================
-# ৬. সাইডবার ইন্টারফেস (লগইন, সাইনআপ এবং প্রিমিয়াম মেম্বারশিপ টায়ার)
+# ৪. ৩ সেকেন্ডের জন্য প্রিমিয়াম স্প্ল্যাশ স্ক্রিন (আটকে থাকবে না, অটো ভ্যানিশ হবে)
+# =========================================================================
+if not st.session_state.intro_shown:
+    placeholder = st.empty()
+    with placeholder.container():
+        st.markdown("""
+            <style>
+            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700&display=swap');
+            
+            .intro-bg {
+                position: fixed;
+                top: 0; left: 0; width: 100vw; height: 100vh;
+                background: #020408;
+                z-index: 999999;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                font-family: 'Plus Jakarta Sans', sans-serif;
+            }
+            
+            .intro-box {
+                text-align: center;
+            }
+            
+            .intro-title {
+                font-size: 65px;
+                font-weight: 700;
+                color: #ffffff;
+                margin-bottom: 10px;
+                letter-spacing: -1px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 15px;
+            }
+            
+            .intro-sub {
+                font-size: 16px;
+                color: #6366f1;
+                letter-spacing: 3px;
+                text-transform: uppercase;
+                font-weight: 700;
+                margin-top: 15px;
+            }
+            </style>
+            <div class="intro-bg">
+                <div class="intro-box">
+                    <div class="intro-title">🤖 OvroAI</div>
+                    <div class="intro-sub">CREATED BY REFAT AOUL</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        time.sleep(3)  # ঠিক ৩ সেকেন্ড স্ক্রিনটি দেখাবে
+    placeholder.empty()  # ৩ সেকেন্ড শেষ হওয়া মাত্রই ইন্ট্রো স্ক্রিনটি মেমোরি থেকে মুছে যাবে
+    st.session_state.intro_shown = True  # সেশনে সেভ হয়ে গেল যাতে বারবার ডিস্টার্ব না করে
+
+# =========================================================================
+# ৫. মূল অ্যাপ্লিকেশনের গ্লোবাল সিএসএস (UI/UX প্রটেকশন ও বাংলা ফন্ট ফিক্স)
+# =========================================================================
+st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Hind+Siliguri:wght@400;600;700&display=swap');
+    
+    /* সাইডবার ও মূল চ্যাটের বাংলা যুক্তাক্ষর ফিক্স */
+    html, body, [data-testid="stAppViewContainer"], [data-testid="stSidebar"], .stMarkdown {
+        font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif !important;
+        background: radial-gradient(circle at top right, #090d16, #020408) !important;
+        color: #f1f5f9 !important;
+    }
+
+    /* সাইডবার কাস্টমাইজেশন */
+    [data-testid="stSidebar"] {
+        background-color: #05070c !important;
+        border-right: 1px solid rgba(99, 102, 241, 0.15) !important;
+    }
+    
+    /* সাইডবার ওপেন/ক্লোজ করার বাটনের গ্লোয়িং স্টাইল */
+    [data-testid="stSidebarCollapseButton"] {
+        background: rgba(10, 15, 30, 0.9) !important;
+        border: 1px solid #6366f1 !important;
+        color: #6366f1 !important;
+        border-radius: 10px !important;
+        box-shadow: 0 0 12px rgba(99, 102, 241, 0.3) !important;
+    }
+
+    /* ডান পাশের অপ্রয়োজনীয় গিটহাব আইকন ও মেনু হাইড */
+    div[data-testid="stHeader"] > div:first-child {
+        display: none !important;
+    }
+    div.stDeployButton, [data-testid="stDecoration"], footer, #MainMenu {
+        visibility: hidden !important;
+        display: none !important;
+    }
+
+    /* প্রিমিয়াম মেম্বারশিপ ইনফো বক্স */
+    .premium-card {
+        background: rgba(99, 102, 241, 0.08) !important;
+        border: 1px solid rgba(99, 102, 241, 0.25) !important;
+        padding: 15px;
+        border-radius: 12px;
+        text-align: center;
+        margin: 10px 0;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# =========================================================================
+# ৬. স্মার্ট এপিআই কী রোটেশন ইঞ্জিন
+# =========================================================================
+def get_ai_client():
+    valid_keys = []
+    for secret_key in st.secrets.keys():
+        if "GEMINI_API_KEY" in secret_key:
+            valid_keys.append(st.secrets[secret_key])
+            
+    if not valid_keys:
+        st.error("Secrets-এ কোনো GEMINI_API_KEY পাওয়া যায়নি!")
+        st.stop()
+        
+    return genai.Client(api_key=random.choice(valid_keys))
+
+# =========================================================================
+# ৭. সাইডবার লেআউট (লগইন, সাইনআপ এবং প্রিমিয়াম প্যাকেজ)
 # =========================================================================
 with st.sidebar:
     st.markdown("<div style='padding-top: 15px;'></div>", unsafe_allow_html=True)
@@ -195,12 +180,12 @@ with st.sidebar:
         st.markdown("<b style='color: #94a3b8; font-size: 15px;'>🔒 লগইন প্যানেল (ঐচ্ছিক)</b>", unsafe_allow_html=True)
         st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
         
-        user = st.text_input("Username", placeholder="rifat", key="username_field")
-        pwd = st.text_input("Password", type="password", placeholder="1234", key="password_field")
+        user = st.text_input("Username", placeholder="Username", key="user_field")
+        pwd = st.text_input("Password", type="password", placeholder="Password", key="pass_field")
         
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("Login", use_container_width=True, key="login_btn"):
+            if st.button("Login", use_container_width=True, key="login_action"):
                 if user == "rifat" and pwd == "1234":
                     st.session_state.is_logged_in = True
                     st.session_state.user_tier = "Pro"
@@ -208,55 +193,55 @@ with st.sidebar:
                     st.query_params["tier"] = "Pro"
                     st.rerun()
                 else:
-                    st.error("ভুল ইউজার বা পাসওয়ার্ড!")
+                    st.error("ভুল তথ্য!")
         with col2:
-            st.button("Sign Up", use_container_width=True, key="signup_btn")
+            st.button("Sign Up", use_container_width=True, key="signup_action")
     else:
-        # প্রিমিয়াম সাবস্ক্রিপশন ভিজ্যুয়াল অপশন বক্স
+        # প্রিমিয়াম টায়ার ম্যানেজমেন্ট
         st.markdown(f"""
-            <div class='tier-box'>
-                <p style='margin:0; font-size:12px; color:#94a3b8;'>Your Subscription Status</p>
+            <div class='premium-card'>
+                <p style='margin:0; font-size:12px; color:#94a3b8;'>Subscription Plan</p>
                 <h3 style='margin:0; color:#fbbf24;'>💎 {st.session_state.user_tier} Member</h3>
             </div>
         """, unsafe_allow_html=True)
         
-        st.markdown("<b style='color: #94a3b8; font-size: 14px;'>🏆 প্রিমিয়াম ফিচারসমূহ সচল:</b>", unsafe_allow_html=True)
-        st.markdown("- আনলিমিটেড স্মার্ট এপিআই কল\n- ২০২৬ রিয়েল-টাইম নলেজ বেস\n- রোটেশনাল ব্যাকএন্ড ফেইলওভার")
+        st.markdown("<b style='color: #94a3b8; font-size: 14px;'>🏆 প্রিমিয়াম ফিচারসমূহ:</b>", unsafe_allow_html=True)
+        st.markdown("- আনলিমিটেড আল্ট্রা-ফাস্ট এপিআই কল\n- ২০২৬ রিয়েল-টাইম গ্লোবাল ডেটা")
         st.markdown("<div style='margin-bottom: 15px;'></div>", unsafe_allow_html=True)
         
         if st.session_state.user_tier == "Pro":
-            if st.button("Upgrade to Elite ($49/mo)", use_container_width=True, key="elite_upgrade_btn"):
+            if st.button("Upgrade to Elite ($49/mo)", use_container_width=True, key="elite_btn"):
                 st.balloons()
                 st.session_state.user_tier = "Elite"
                 st.query_params["tier"] = "Elite"
                 st.rerun()
         else:
-            st.success("👑 You are on the highest Elite tier!")
+            st.success("👑 Elite Active (Maximum Access)")
             
         st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
-        if st.button("Logout", use_container_width=True, key="logout_btn"):
+        if st.button("Logout", use_container_width=True, key="logout_action"):
             st.session_state.is_logged_in = False
             st.query_params.clear()
             st.rerun()
 
     st.markdown("---")
-    if st.button("➕ New Conversation", use_container_width=True, key="new_chat_btn"):
+    if st.button("➕ New Conversation", use_container_width=True, key="new_chat_action"):
         st.session_state.chat_history = []
         st.rerun()
 
 # =========================================================================
-# ৭. মূল চ্যাট ইন্টারফেস
+# ৮. মূল চ্যাট ইন্টারফেস (ইন্ট্রো স্ক্রিনের পর সাথে সাথে লোড হবে)
 # =========================================================================
 st.markdown("<h1 style='text-align: center; color: #ffffff; margin-bottom:0;'>🤖 OvroAI Assistant</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #64748b;'>2026 Core Engine • Created by Refat Aoul</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #64748b;'>2026 Core Engine • Powered by Refat Aoul</p>", unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
-# চ্যাট হিস্ট্রি রেন্ডার
+# চ্যাট হিস্ট্রি ডিসপ্লে
 for role, text in st.session_state.chat_history:
     with st.chat_message(role):
         st.markdown(text)
 
-# চ্যাট ইনপুট ও প্রসেসিং
+# চ্যাট ইনপুট প্রসেসিং
 if prompt := st.chat_input("OvroAI-কে কিছু জিজ্ঞেস করুন..."):
     st.chat_message("user").markdown(prompt)
     st.session_state.chat_history.append(("user", prompt))
@@ -276,6 +261,6 @@ if prompt := st.chat_input("OvroAI-কে কিছু জিজ্ঞেস ক
             
         except Exception as e:
             if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
-                st.warning("⏱️ এই লাইনের কোটা শেষ! ব্যাকএন্ড অন্য একটি কী ট্রাই করছে, দয়া করে আবার মেসেজ পাঠান।")
+                st.warning("⏱️ বর্তমান লাইনটি ব্যস্ত! ব্যাকএন্ড অন্য লাইনে ট্রাই করছে, দয়া করে আবার সেন্ড করুন।")
             else:
                 st.error(f"Error: {e}")
