@@ -2,7 +2,6 @@ import streamlit as st
 import os
 import random
 import io
-import streamlit.components.v1 as components
 from google import genai
 from google.genai import types
 from PIL import Image
@@ -18,7 +17,7 @@ st.set_page_config(
 )
 
 # =========================================================================
-# ২. ২০ ২৬ সালের তথ্যের জন্য সুপার ইনস্ট্রাকশন ফিক্স
+# ২. ২০২৬ সালের তথ্যের জন্য সুপার ইনস্ট্রাকশন ফিক্স
 # =========================================================================
 current_date_info = """
 Today's date is Monday, May 18, 2026. 
@@ -30,7 +29,7 @@ Always provide information based on this 2026 timeline and context. Never say yo
 """
 
 # =========================================================================
-# ৩. প্রিমিয়াম সাইবার-ডার্ক UI/UX সিএসএস ডিজাইন
+# ৩. আল্ট্রা-স্টাইলিশ UI/UX, স্লাইড অ্যানিমেশন এবং গিটহাব আইকন রিমুভাল সিএসএস
 # =========================================================================
 st.markdown("""
     <style>
@@ -41,50 +40,58 @@ st.markdown("""
         font-family: 'Plus Jakarta Sans', sans-serif;
         background: radial-gradient(circle at top right, #090d16, #020408) !important;
         color: #f1f5f9 !important;
-        scroll-behavior: smooth;
     }
     
-    /* সাইডবার প্রিমিয়াম কাস্টম ডিজাইন */
+    /* 🎯 সাইডবার স্লাইড ট্রানজিশন এবং প্রিমিয়াম অ্যানিমেশন */
     [data-testid="stSidebar"] {
         background-color: #05070c !important;
         border-right: 1px solid rgba(99, 102, 241, 0.1) !important;
-        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
+        will-change: transform;
+    }
+    
+    /* সাইডবার ভেতরের কন্টেন্ট অ্যানিমেশন */
+    [data-testid="stSidebarUserContent"] {
+        animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateX(-10px); }
+        to { opacity: 1; transform: translateX(0); }
     }
     
     [data-testid="stSidebarNav"] { display: block !important; }
     
-    /* সাইডবার ফিরিয়ে আনার ফ্লোটিং নিয়ন বাটন */
+    /* 🎯 সাইডবার ফিরিয়ে আনার ফ্লোটিং গ্লোয়িং নিয়ন বাটন */
     [data-testid="stSidebarCollapseButton"] {
         display: flex !important;
         visibility: visible !important;
         position: fixed !important;
         left: 20px !important;
         top: 20px !important;
-        background: rgba(10, 15, 30, 0.7) !important;
-        border: 1px solid rgba(99, 102, 241, 0.5) !important;
-        border-radius: 14px !important;
+        background: rgba(10, 15, 30, 0.85) !important;
+        border: 1px solid #6366f1 !important;
+        border-radius: 12px !important;
         color: #6366f1 !important;
         backdrop-filter: blur(12px) !important;
         z-index: 999999 !important;
-        box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15) !important;
+        box-shadow: 0 0 15px rgba(99, 102, 241, 0.4) !important;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
     [data-testid="stSidebarCollapseButton"]:hover {
         background: #6366f1 !important;
         color: #ffffff !important;
-        box-shadow: 0 0 25px rgba(99, 102, 241, 0.6) !important;
+        box-shadow: 0 0 25px rgba(99, 102, 241, 0.7) !important;
         transform: scale(1.08);
     }
     
-    /* ডিফল্ট মেনু, ফুটার ও গিটহাব লোগো চিরতরে ভ্যানিশ */
-    div.stDeployButton, [data-testid="stDecoration"], footer, #MainMenu {
+    /* 🔴 ডান কোণার গিটহাব আইকন, থ্রি-ডট মেনু এবং টপ বার সম্পূর্ণ ভ্যানিশ করার মেগা ফিক্স */
+    [data-testid="stHeader"], header, footer, div.stDeployButton, [data-testid="stDecoration"], #MainMenu {
         visibility: hidden !important;
         display: none !important;
+        opacity: 0 !important;
     }
-    [data-testid="stHeader"] { background: transparent !important; }
-    [data-testid="stHeader"] svg { display: none !important; }
-
-    /* চ্যাট ইনপুট বক্সের আল্ট্রা-মডার্ন লুক */
+    
+    /* চ্যাট ইনপুট বক্সের মডার্ন গ্লোয়িং লুক */
     [data-testid="stChatInput"] {
         border-radius: 16px !important;
         background-color: #090d16 !important;
@@ -93,15 +100,18 @@ st.markdown("""
         color: #ffffff !important;
         transition: all 0.3s ease !important;
     }
+    [data-testid="stChatInput"]:focus-within {
+        border: 1px solid #6366f1 !important;
+        box-shadow: 0 0 25px rgba(99, 102, 241, 0.3) !important;
+    }
     
-    /* সাইডবার বাটন ও গ্লাস-মরফিজম ইনপুট */
+    /* সাইডবার বাটনগুলোর প্রিমিয়াম স্টাইল */
     .stButton>button {
         background: linear-gradient(135deg, #0f111a, #18132b) !important;
         color: #a5b4fc !important;
         border: 1px solid rgba(99, 102, 241, 0.25) !important;
         border-radius: 12px !important;
         font-weight: 600 !important;
-        padding: 10px 20px !important;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
     .stButton>button:hover {
@@ -117,47 +127,32 @@ st.markdown("""
         border: 1px solid rgba(255, 255, 255, 0.08) !important;
         border-radius: 12px !important;
     }
-    .stTextInput>div>div>input:focus {
-        border-color: #6366f1 !important;
-        box-shadow: 0 0 15px rgba(99, 102, 241, 0.2) !important;
-    }
     </style>
     """, unsafe_allow_html=True)
 
 # =========================================================================
-# ৪. 🔮 ম্যাজিক জাভাস্ক্রিপ্ট ইনজেকশন (স্মুথ স্লাইড ও ইউজার এক্সপেরিয়েন্স এনহ্যান্সার)
+# ৪. 🔮 জাভাস্ক্রিপ্ট ইনজেকশন (মেনু ও অ্যানিমেশন ডিরেক্ট ব্রাউজার ফিক্স)
 # =========================================================================
-# এই স্ক্রিপ্টটি ব্রাউজার লেভেলে রান করবে এবং সাইডবার বন্ধ/খোলার সময় থ্রিডি স্মুথ ইলাস্টিক মোশন তৈরি করবে
-components.html("""
+st.components.v1.html("""
 <script>
-    const shadowRootFix = () => {
-        // স্ট্রিমলিটের মূল সাইডবার এলিমেন্ট খুঁজে বের করা
-        const sidebar = window.parent.document.querySelector('[data-testid="stSidebar"]');
-        const mainContent = window.parent.document.querySelector('[data-testid="stAppViewContainer"]');
-        const collapseBtn = window.parent.document.querySelector('[data-testid="stSidebarCollapseButton"]');
+    const applyPremiumEffects = () => {
+        const parentDoc = window.parent.document;
         
-        if (sidebar && mainContent) {
-            // সাইডবারে স্মুথ জাভাস্ক্রিপ্ট ট্রানজিশন অ্যানিমেশন অ্যাড করা
+        // ডান কোণার গিটহাব আইকন সম্বলিত হেডার বার চিরতরে মুছে ফেলার জাভাস্ক্রিপ্ট সিকিউরিটি
+        const header = parentDoc.querySelector('[data-testid="stHeader"]');
+        if (header) {
+            header.style.display = 'none';
+            header.style.visibility = 'hidden';
+        }
+        
+        // সাইডবারের ট্রানজিশন আরও স্মুথ ও কাস্টমাইজ করা
+        const sidebar = parentDoc.querySelector('[data-testid="stSidebar"]');
+        if (sidebar) {
             sidebar.style.transition = "transform 0.45s cubic-bezier(0.25, 1, 0.5, 1)";
-            mainContent.style.transition = "margin-left 0.45s cubic-bezier(0.25, 1, 0.5, 1)";
-            
-            // চ্যাট ইনপুট ফোকাস অ্যানিমেশন গ্লো
-            const chatInput = window.parent.document.querySelector('[data-testid="stChatInput"]');
-            if (chatInput) {
-                chatInput.addEventListener('focusin', () => {
-                    chatInput.style.borderColor = "#6366f1";
-                    chatInput.style.boxShadow = "0 0 25px rgba(99, 102, 241, 0.35)";
-                });
-                chatInput.addEventListener('focusout', () => {
-                    chatInput.style.borderColor = "rgba(99, 102, 241, 0.2)";
-                    chatInput.style.boxShadow = "0 10px 30px rgba(0, 0, 0, 0.5)";
-                });
-            }
         }
     };
-    
-    // পেজ লোড হওয়ার পর স্ক্রিপ্টটি সক্রিয় করার টাইমার
-    setTimeout(shadowRootFix, 1000);
+    // অ্যাপ লোড হওয়ার পর এবং প্রতি ১ সেকেন্ড পর পর রান করবে যাতে গিটহাব লোগো ফিরে না আসে
+    setInterval(applyPremiumEffects, 1000);
 </script>
 """, height=0, width=0)
 
@@ -246,7 +241,6 @@ st.markdown("<h1 style='text-align: center; color: #ffffff; font-weight: 700; fo
 st.markdown("<p style='text-align: center; color: #475569; font-size: 15px; font-weight: 500; margin-top: 5px; letter-spacing: 0.5px;'>Intelligence Redefined • 5x Smart Failover Core</p>", unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
-# পুরোনো চ্যাট হিস্ট্রি স্ক্রিনে রেন্ডার করা
 for role, text in st.session_state.chat_history:
     with st.chat_message(role):
         st.markdown(text)
@@ -267,7 +261,6 @@ if prompt := st.chat_input("Ask OvroAI anything..."):
         response_success = False
         last_error_message = ""
         
-        # নিখুঁত লুপ মেকানিজম (ব্যস্ত থাকলে অটো পরের কী ট্রাই করবে)
         for current_key in shuffled_keys:
             try:
                 client = genai.Client(api_key=current_key)
@@ -291,7 +284,6 @@ if prompt := st.chat_input("Ask OvroAI anything..."):
                     last_error_message = str(e)
                     continue
         
-        # সব কী একই সাথে ব্লকড থাকলে সেফটি নোটিশ
         if not response_success:
             if last_error_message == "RESOURCE_EXHAUSTED":
                 st.info("⏱️ ওভ্রোআই-এর ৫টি ফ্রি ব্যাকএন্ড লাইনের সবগুলোই এই মুহূর্তে অত্যন্ত ব্যস্ত। অনুগ্রহ করে ৩০ সেকেন্ড পর আবার চেষ্টা করুন।")
