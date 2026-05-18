@@ -23,13 +23,12 @@ if "is_logged_in" not in st.session_state:
     st.session_state.is_logged_in = False
 
 # =========================================================================
-# ৩. আপনার লোগোর হুবহু কালার ও স্লো-মোশন ব্লিংকিং স্প্ল্যাশ স্ক্রিন (কোনো ল্যাগ নেই)
+# ৩. ২-৩ সেকেন্ডের সুপার-স্মুথ স্প্ল্যাশ স্ক্রিন (১০০% ফিক্সড মেইন ইন্টারফেস)
 # =========================================================================
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700&family=Inter:wght@400;700&display=swap');
     
-    /* ব্যাকগ্রাউন্ড সম্পূর্ণ ডার্ক */
     #intro-overlay {
         position: fixed;
         top: 0; left: 0; width: 100vw; height: 100vh;
@@ -40,17 +39,17 @@ st.markdown("""
         align-items: center;
         opacity: 1;
         transform: translateY(0);
-        /* স্টাইলিশ ভাবে উপরে সরে যাওয়ার জন্য ট্র্যানজিশন */
-        transition: transform 1.5s cubic-bezier(0.85, 0, 0.15, 1), opacity 1.2s ease-in-out;
+        /* দ্রুত এবং স্টাইলিশভাবে ওপরে উঠে যাওয়ার জন্য ট্র্যানজিশন */
+        transition: transform 0.8s cubic-bezier(0.85, 0, 0.15, 1), opacity 0.6s ease-in-out;
     }
     
     .intro-box {
         text-align: center;
-        /* ৪.৫ সেকেন্ড ব্যাপী একদম স্লো-মোশন ব্লিংকিং বা পালস ইফেক্ট */
-        animation: slowMotionBlink 4.5s ease-in-out infinite;
+        /* দ্রুত ব্লিংকিং অ্যানিমেশন (১.২ সেকেন্ড পর পর পালস করবে) */
+        animation: smoothPulse 1.2s ease-in-out infinite;
     }
     
-    /* আপনার দেওয়া লোগোর মতো বেগুনী গ্লো */
+    /* আপনার লোগোর মতো বেগুনী গ্লো */
     .logo-title {
         font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 70px;
@@ -82,10 +81,10 @@ st.markdown("""
         text-shadow: 0 0 15px rgba(99, 102, 241, 0.6);
     }
 
-    /* মসৃণ স্লো-মোশন ব্লিংকিং অ্যানিমেশন */
-    @keyframes slowMotionBlink {
-        0%, 100% { opacity: 0.5; transform: scale(0.98); }
-        50% { opacity: 1; transform: scale(1.01); filter: drop-shadow(0 0 15px rgba(168, 85, 247, 0.3)); }
+    /* মসৃণ পালস বা ব্লিংকিং ইফেক্ট */
+    @keyframes smoothPulse {
+        0%, 100% { opacity: 0.7; transform: scale(0.99); }
+        50% { opacity: 1; transform: scale(1.01); }
     }
 
     /* মূল ড্যাশবোর্ড ও চ্যাট পেজের কাস্টম লাক্সারি লুক */
@@ -118,15 +117,15 @@ st.markdown("""
     </div>
 
     <script>
-    // ঠিক ৪.৫ সেকেন্ড স্লো-মোশন অ্যানিমেশন দেখানোর পর স্টাইলিশ ভাবে উপরে স্লাইড হয়ে উঠে যাবে
+    // ঠিক ২.৫ সেকেন্ড পর স্ক্রিনটি ওপরে উঠে যাবে এবং মেইন ইন্টারফেস দেখাবে
     setTimeout(function() {
         var overlay = window.parent.document.getElementById('intro-overlay');
         if (overlay) {
             overlay.style.transform = 'translateY(-100vh)'; // স্টাইলিশ উপরের দিকে সরে যাওয়া
             overlay.style.opacity = '0';
-            setTimeout(function() { overlay.style.display = 'none'; }, 1500);
+            setTimeout(function() { overlay.style.display = 'none'; }, 800);
         }
-    }, 4500);
+    }, 2500); // ২.৫ সেকেন্ড টাইমিং ফিক্সড
     </script>
     """, unsafe_allow_html=True)
 
@@ -150,7 +149,7 @@ with st.sidebar:
     st.markdown("<p style='color: #475569; font-size: 12px; margin-top:0;'>Next-Gen AI Workspace</p>", unsafe_allow_html=True)
     st.markdown("---")
 
-    # লগইন প্যানেল (অপশনাল অ্যাক্সেস)
+    # লগইন প্যানেল
     if not st.session_state.is_logged_in:
         st.markdown("<b style='color: #94a3b8; font-size: 14px;'>🔒 সিস্টেম লগইন</b>", unsafe_allow_html=True)
         user = st.text_input("Username", placeholder="rifat", label_visibility="collapsed", key="sidebar_user")
@@ -170,7 +169,7 @@ with st.sidebar:
             
     st.markdown("---")
 
-    # 💎 আপনার কাঙ্ক্ষিত প্রিমিয়াম মেম্বারশিপ বক্স ($9 অপশন সহ)
+    # 💎 প্রিমিয়াম মেম্বারশিপ বক্স ($9 অপশন স্থায়ীভাবে দৃশ্যমান)
     st.markdown("<div class='premium-sidebar-card'>", unsafe_allow_html=True)
     st.markdown(f"<p style='color: #94a3b8; margin:0; font-size:12px;'>CURRENT PLAN</p>", unsafe_allow_html=True)
     st.markdown(f"<h3 style='color: #fbbf24; margin-top:5px; margin-bottom:15px;'>👑 {st.session_state.user_tier} Tier</h3>", unsafe_allow_html=True)
@@ -203,7 +202,7 @@ with st.sidebar:
             st.rerun()
 
 # =========================================================================
-# 👑 ৬. মূল চ্যাট উইন্ডো ইন্টারফেস
+# ৪. মূল চ্যাট উইন্ডো ইন্টারফেস
 # =========================================================================
 st.markdown("<h1 style='text-align: center; color: white; margin-bottom: 0;'>🤖 OvroAI Assistant</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #64748b; margin-top: 5px;'>2026 Intelligence Engine • Created by Refat Aoul</p>", unsafe_allow_html=True)
@@ -214,11 +213,10 @@ for role, text in st.session_state.chat_history:
     with st.chat_message(role):
         st.markdown(text)
 
-# চ্যাট প্রসেসিং কোড
+# চ্যাট ইনপুট
 if prompt := st.chat_input("OvroAI-কে কিছু জিজ্ঞেস করুন..."):
     st.chat_message("user").markdown(prompt)
     st.session_state.chat_history.append(("user", prompt))
-
+    
     with st.chat_message("assistant"):
-        # আপনার এপিআই কি রোটেশন ব্যাকএন্ড থেকে ডাইনামিক রেসপন্স জেনারেট করবে
         st.markdown("রেসপন্স প্রসেস হচ্ছে...")
