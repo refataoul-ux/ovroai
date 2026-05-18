@@ -24,12 +24,12 @@ Today's date is Monday, May 18, 2026.
 Current Global Context for you:
 - World is preparing for the 2026 FIFA World Cup in North America.
 - Current News (May 2026): WHO is monitoring a new Ebola strain in DRC.
-- You are OvroAI, developed by Rifat Awal from Satkhira, Bangladesh.
+- You are OvroAI, developed by Refat Aoul from Satkhira, Bangladesh.
 Always provide information based on this 2026 timeline and context. Never say your knowledge cutoff is 2024.
 """
 
 # =========================================================================
-# ৩. ৩ সেকেন্ডের আল্ট্রা-স্টাইলিশ ইন্ট্রো স্ক্রিন এবং প্রিমিয়াম UI/UX সিএসএস
+# ৩. আল্ট্রা-স্টাইলিশ ইন্ট্রো স্ক্রিন এবং প্রিমিয়াম UI/UX সিএসএস
 # =========================================================================
 st.markdown("""
     <style>
@@ -89,16 +89,24 @@ st.markdown("""
         to { opacity: 1; transform: translateY(-5px); }
     }
 
-    /* 🎯 সাইডবার স্লাইড ট্রানজিশন ও স্টাইল */
+    /* 🎯 সাইডবার স্লাইড ট্রানজিশন ও স্টাইল ফিক্স */
     [data-testid="stSidebar"] {
         background-color: #05070c !important;
         border-right: 1px solid rgba(99, 102, 241, 0.1) !important;
         transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
+        z-index: 10000 !important;
+    }
+    
+    /* সাইডবারের ভেতরের কন্টেন্ট যাতে ব্লক বা গায়েব না হয় */
+    [data-testid="stSidebarUserContent"] {
+        padding-top: 2rem !important;
+        visibility: visible !important;
+        display: block !important;
     }
     
     [data-testid="stSidebarNav"] { display: block !important; }
     
-    /* 🎯 স্লাইড বাটন ফিরিয়ে আনার জন্য আল্টিমেট ফিক্স (সব সময় দৃশ্যমান থাকবে) */
+    /* 🎯 স্লাইড বাটন ফিরিয়ে আনার জন্য গ্লোয়িং নিয়ন বাটন */
     [data-testid="stSidebarCollapseButton"] {
         display: flex !important;
         visibility: visible !important;
@@ -121,12 +129,11 @@ st.markdown("""
         transform: scale(1.08);
     }
     
-    /* 🔴 ডান কোণার গিটহাব আইকন ও থ্রি-ডট মেনু রিমুভাল (সাইডবার বাটন না ভেঙে) */
+    /* 🔴 ডান কোণার গিটহাব আইকন ও থ্রি-ডট মেনু রিমুভাল */
     [data-testid="stHeader"] {
         background: transparent !important;
         z-index: 999;
     }
-    /* হেডার এলিমেন্টের ভেতরের গিটহাব এবং অতিরিক্ত মেনু বাটন শুধু হাইড করা */
     [data-testid="stHeader"] > div:first-child {
         display: none !important;
     }
@@ -162,11 +169,19 @@ st.markdown("""
         box-shadow: 0 0 20px rgba(99, 102, 241, 0.4) !important;
         transform: translateY(-2px);
     }
+
+    /* সাইডবার টেক্সট ইনপুট এরিয়া ভিজিবিলিটি ফিক্স */
+    .stTextInput>div>div>input {
+        background-color: rgba(15, 23, 42, 0.8) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(99, 102, 241, 0.3) !important;
+        border-radius: 10px !important;
+    }
     </style>
 
     <div id="intro-overlay">
         <div class="intro-logo">🤖 OvroAI</div>
-        <div class="intro-credits">Created by <span class="creator-name">Rifat Awal</span></div>
+        <div class="intro-credits">Created by <span class="creator-name">Refat Aoul</span></div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -225,20 +240,19 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
 # =========================================================================
-# ৮. সাইডবার ডিজাইন ও কন্ট্রোল
+# ৮. সাইডবার ডিজাইন ও কন্ট্রোল (লগইন প্যানেল দৃশ্যমানতা পুনরুদ্ধার)
 # =========================================================================
 with st.sidebar:
-    st.markdown("<div style='padding-top: 30px;'></div>", unsafe_allow_html=True)
     st.markdown("<h2 style='color: #6366f1; font-size: 30px; font-weight: 700; margin-bottom: 0px; letter-spacing: -0.5px;'>OvroAI 2026</h2>", unsafe_allow_html=True)
     st.markdown("<p style='color: #475569; font-size: 13px; font-weight: 500;'>Next-Gen Global Platform</p>", unsafe_allow_html=True)
     st.markdown("<hr style='border-color: rgba(99, 102, 241, 0.15); margin-top: 5px; margin-bottom: 25px;'>", unsafe_allow_html=True)
     
     if not st.session_state.is_logged_in:
-        st.markdown("<b style='color: #64748b; font-size: 14px;'>🔒 লগইন প্যানেল (ঐচ্ছিক)</b>", unsafe_allow_html=True)
+        st.markdown("<b style='color: #94a3b8; font-size: 15px;'>🔒 লগইন প্যানেল (ঐচ্ছিক)</b>", unsafe_allow_html=True)
         st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
         
-        user = st.text_input("Username", placeholder="Username", label_visibility="collapsed")
-        pwd = st.text_input("Password", type="password", placeholder="Password", label_visibility="collapsed")
+        user = st.text_input("Username", placeholder="Username", key="sidebar_user_input", label_visibility="collapsed")
+        pwd = st.text_input("Password", type="password", placeholder="Password", key="sidebar_pwd_input", label_visibility="collapsed")
         
         st.markdown("<div style='margin-bottom: 5px;'></div>", unsafe_allow_html=True)
         col_login, col_reg = st.columns(2)
