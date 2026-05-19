@@ -19,7 +19,7 @@ st.set_page_config(
 # ২. ২০২৬ সালের তথ্যের জন্য সুপার ইনস্ট্রাকশন ফিক্স (Refat Aoul Branding)
 # =========================================================================
 current_date_info = """
-Today's date is Monday, May 19, 2026. 
+Today's date is Tuesday, May 19, 2026. 
 Current Global Context for you:
 - You are OvroAI, a highly advanced AI developed by Refat Aoul from Satkhira, Bangladesh.
 - World is preparing for the 2026 FIFA World Cup.
@@ -149,15 +149,17 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # =========================================================================
-# ৬. সকল উপলব্ধ এপিআই কী লোড করার ফাংশন (BUG FIX - কী হার্ডকোড নেই)
+# ৬. সকল উপলব্ধ এপিআই কী লোড করার ফাংশন (ক্রমানুসারে সাজানো)
 # =========================================================================
 def load_all_keys():
     keys = []
+    # ১ম কী-টি প্রথমে লিস্টে ঢুকবে
     if "GEMINI_API_KEY" in st.secrets and st.secrets["GEMINI_API_KEY"]:
         keys.append(st.secrets["GEMINI_API_KEY"].strip())
+    # ২য় কী-টি ব্যাকআপ হিসেবে লিস্টের পরে থাকবে
     if "GEMINI_API_KEY_2" in st.secrets and st.secrets["GEMINI_API_KEY_2"]:
         keys.append(st.secrets["GEMINI_API_KEY_2"].strip())
-    return list(set(keys))
+    return keys
 
 # =========================================================================
 # ৭. সাইডবার এবং প্রিমিয়াম মেম্বারশিপ অপশন প্যানেল
@@ -219,6 +221,7 @@ st.markdown("<h1 style='text-align: center; color: white; margin-bottom: 0;'>�
 st.markdown("<p style='text-align: center; color: #64748b; margin-top: 5px;'>2026 Core Engine • Created by Refat Aoul</p>", unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
+# আগের চ্যাট হিস্ট্রি রেন্ডার করা
 for role, text in st.session_state.chat_history:
     with st.chat_message(role):
         st.markdown(text)
@@ -230,18 +233,19 @@ if prompt := st.chat_input("OvroAI-কে কিছু জিজ্ঞেস ক
         available_keys = load_all_keys()
         
         if not available_keys:
-            st.error("🔑 Secrets ফাইলে কোনো সঠিক এপিআই কী খুঁজে পাওয়া যায়নি।")
+            st.error("🔑 Secrets (secrets.toml) ফাইলে কোনো সঠিক এপিআই কী খুঁজে পাওয়া যায়নি।")
             st.stop()
             
-        random.shuffle(available_keys)
         response_received = False
         last_error = ""
 
-        recent_history = st.session_state.chat_history[-5:]
+        # চ্যাট হিস্ট্রি প্রিপারেশন (নতুন google-genai SDK স্ট্রাকচার অনুযায়ী)
+        recent_history = st.session_state.chat_history[-6:] # সর্বশেষ ৩ জোড়া মেসেজ পাঠানো হচ্ছে
         formatted_contents = [types.Content(role=role, parts=[types.Part.from_text(text=text)]) for role, text in recent_history]
         formatted_contents.append(types.Content(role="user", parts=[types.Part.from_text(text=prompt)]))
 
-        for current_key in available_keys:
+        # স্মার্ট কী রোটেশন ইঞ্জিন (১ম কী ফেইল করলে ২য় কী কাজ করবে)
+        for index, current_key in enumerate(available_keys):
             try:
                 client = genai.Client(api_key=current_key)
                 response = client.models.generate_content(
@@ -253,18 +257,19 @@ if prompt := st.chat_input("OvroAI-কে কিছু জিজ্ঞেস ক
                 reply = response.text
                 st.markdown(reply)
                 
+                # সেশন স্টেটে নতুন চ্যাট সেভ করা
                 st.session_state.chat_history.append(("user", prompt))
                 st.session_state.chat_history.append(("assistant", reply))
                 response_received = True
-                break 
+                break # সফল হলে লুপ থেকে বের হয়ে যাবে
                 
             except Exception as e:
                 last_error = str(e)
+                # যদি ১ম কী নষ্ট বা কোটা শেষ হয়, তবে নোটিফিকেশন ছাড়াই ২য় কি ট্রাই করবে।
                 continue 
 
         if not response_received:
             if "429" in last_error or "RESOURCE_EXHAUSTED" in last_error:
-                st.error("⏱️ গুগলের ফ্রি কোটা সাময়িকভাবে সম্পূর্ণ শেষ। দয়া করে ১ মিনিট পর আবার সেন্ড করুন অথবা নতুন কী যোগ করুন।")
+                st.error("⏱️ গুগলের ফ্রি কোটা (সবগুলো Key-এর জন্য) সাময়িকভাবে সম্পূর্ণ শেষ। দয়া করে ১ মিনিট পর আবার চেষ্টা করুন।")
             else:
-                st.error(f"Error: {last_error}")
-          
+                st.error(f"API Error: {last_error}")
