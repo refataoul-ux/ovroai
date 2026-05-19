@@ -159,7 +159,7 @@ def load_all_keys():
     if "GEMINI_API_KEY" in st.secrets and st.secrets["GEMINI_API_KEY"]:
         keys.append(st.secrets["GEMINI_API_KEY"].strip())
     if "GEMINI_API_KEY_2" in st.secrets and st.secrets["GEMINI_API_KEY_2"]:
-        keys.append(st.secrets["GEMINI_API_KEY_2"].strip())
+        keys.append(st.secrets["AIzaSyCoQoH4D5-G-MupEJpi7-PIOgeKlor6V5Q"].strip())
     return list(set(keys)) # ডুপ্লিকেট বাদ দিয়ে ইউনিক লিস্ট
 
 # =========================================================================
