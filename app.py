@@ -16,7 +16,7 @@ st.set_page_config(
 )
 
 # =========================================================================
-# ২. ২০跨৬ সালের তথ্যের জন্য সুপার ইনস্ট্রাকশন ফিক্স (Refat Aoul Branding)
+# ২. ২০২৬ সালের তথ্যের জন্য সুপার ইনস্ট্রাকশন ফিক্স (Refat Aoul Branding)
 # =========================================================================
 current_date_info = """
 Today's date is Monday, May 18, 2026. 
@@ -113,7 +113,7 @@ if not st.session_state.intro_done:
             """, unsafe_allow_html=True)
         time.sleep(2.5)  # লোগোটি ঠিক ২.৫ সেকেন্ড থাকবে
     
-    placeholder.empty()  # মেমোরি থেকে মুছে গেল
+    placeholder.empty()
     st.session_state.intro_done = True 
     st.rerun()
 
@@ -152,28 +152,15 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # =========================================================================
-# ৬. আপনার নতুন Secrets মিল রেখে নিখুঁত এপিআই কী লোডার লজিক
+# ৬. সকল উপলব্ধ এপিআই কী লোড করার ফাংশন
 # =========================================================================
-def get_ai_client():
-    valid_keys = []
-    
-    # আপনার দেওয়া সঠিক নামগুলো চেক করা হচ্ছে
-    if "GEMINI_API_KEY" in st.secrets:
-        k1 = st.secrets["GEMINI_API_KEY"]
-        if k1 and "AIzaSy" in k1:
-            valid_keys.append(k1.strip())
-            
-    if "GEMINI_API_KEY_2" in st.secrets:
-        k2 = st.secrets["GEMINI_API_KEY_2"]
-        if k2 and "AIzaSy" in k2:
-            valid_keys.append(k2.strip())
-            
-    if not valid_keys:
-        st.error("🔑 Secrets-এ কোনো সঠিক এপিআই কী পাওয়া যায়নি! দয়া করে ড্যাশবোর্ডের Secrets বক্সটি চেক করুন।")
-        st.stop()
-        
-    # র্যান্ডমলি একটি কী সিলেক্ট করে রিটার্ন করবে
-    return genai.Client(api_key=random.choice(valid_keys))
+def load_all_keys():
+    keys = []
+    if "GEMINI_API_KEY" in st.secrets and st.secrets["GEMINI_API_KEY"]:
+        keys.append(st.secrets["GEMINI_API_KEY"].strip())
+    if "GEMINI_API_KEY_2" in st.secrets and st.secrets["GEMINI_API_KEY_2"]:
+        keys.append(st.secrets["GEMINI_API_KEY_2"].strip())
+    return list(set(keys)) # ডুপ্লিকেট বাদ দিয়ে ইউনিক লিস্ট
 
 # =========================================================================
 # ৭. সাইডবার এবং প্রিমিয়াম মেম্বারশিপ অপশন প্যানেল
@@ -204,7 +191,7 @@ with st.sidebar:
             
     st.markdown("---")
 
-    # 💎 প্রিমিয়াম মেম্বারশিপ বক্স ($9 অপশন সব সময় দৃশ্যমান)
+    # 💎 প্রিমিয়াম মেম্বারশিপ বক্স
     st.markdown("<div class='premium-sidebar-card'>", unsafe_allow_html=True)
     st.markdown(f"<p style='color: #94a3b8; margin:0; font-size:12px;'>CURRENT PLAN</p>", unsafe_allow_html=True)
     st.markdown(f"<h3 style='color: #fbbf24; margin-top:5px; margin-bottom:15px;'>👑 {st.session_state.user_tier} Tier</h3>", unsafe_allow_html=True)
@@ -231,7 +218,7 @@ with st.sidebar:
         st.rerun()
 
 # =========================================================================
-# ৮. মূল চ্যাট উইন্ডো ইন্টারফেস (১০০% সচল)
+# ৮. মূল চ্যাট উইন্ডো ও স্মার্ট ফেল-ওভার জেনারেশন ইঞ্জিন (হিস্ট্রি ট্রিমার সহ)
 # =========================================================================
 st.markdown("<h1 style='text-align: center; color: white; margin-bottom: 0;'>🤖 OvroAI Assistant</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #64748b; margin-top: 5px;'>2026 Core Engine • Created by Refat Aoul</p>", unsafe_allow_html=True)
@@ -242,26 +229,52 @@ for role, text in st.session_state.chat_history:
     with st.chat_message(role):
         st.markdown(text)
 
-# চ্যাট ইনপুট ও প্রসেসিং
+# চ্যাট ইনপুট ও অটো-রোটেশন প্রসেসিং লুপ
 if prompt := st.chat_input("OvroAI-কে কিছু জিজ্ঞেস করুন..."):
     st.chat_message("user").markdown(prompt)
-    st.session_state.chat_history.append(("user", prompt))
     
     with st.chat_message("assistant"):
-        try:
-            client = get_ai_client()
-            response = client.models.generate_content(
-                model='gemini-2.0-flash', 
-                contents=prompt,
-                config=types.GenerateContentConfig(system_instruction=current_date_info)
-            )
+        available_keys = load_all_keys()
+        
+        if not available_keys:
+            st.error("🔑 Secrets ফাইলে কোনো সঠিক এপিআই কী খুঁজে পাওয়া যায়নি।")
+            st.stop()
             
-            reply = response.text
-            st.markdown(reply)
-            st.session_state.chat_history.append(("assistant", reply))
-            
-        except Exception as e:
-            if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
-                st.error("⏱️ গুগলের ফ্রি লিমিট এইমাত্র শেষ হয়েছে। দয়া করে ১ মিনিট পর আরেকটি মেসেজ দিয়ে চেক করুন।")
+        random.shuffle(available_keys) # কী-গুলোকে মিক্স করে নেওয়া হচ্ছে
+        response_received = False
+        last_error = ""
+
+        # 🛠️ মেমোরি ট্রিমার লজিক: গুগলকে শুধু শেষের ৫টি মেসেজ পাঠিয়ে জ্যাম মুক্ত রাখবে
+        recent_history = st.session_state.chat_history[-5:]
+        formatted_contents = [types.Content(role=role, parts=[types.Part.from_text(text=text)]) for role, text in recent_history]
+        formatted_contents.append(types.Content(role="user", parts=[types.Part.from_text(text=prompt)]))
+
+        # লুপ চালিয়ে একটার পর একটা কী ট্রাই করা হবে, ব্যাকগ্রাউন্ডেই ফেলব্যাক হ্যান্ডেল হবে
+        for current_key in available_keys:
+            try:
+                client = genai.Client(api_key=current_key)
+                response = client.models.generate_content(
+                    model='gemini-2.0-flash', 
+                    contents=formatted_contents,  # ট্রিম করা হিস্ট্রি পাঠানো হচ্ছে
+                    config=types.GenerateContentConfig(system_instruction=current_date_info)
+                )
+                
+                reply = response.text
+                st.markdown(reply)
+                
+                # সফলভাবে রেসপন্স আসলে তবেই মূল হিস্ট্রিতে ইউজার ও অ্যাসিস্ট্যান্টের মেসেজ সেভ হবে
+                st.session_state.chat_history.append(("user", prompt))
+                st.session_state.chat_history.append(("assistant", reply))
+                response_received = True
+                break 
+                
+            except Exception as e:
+                last_error = str(e)
+                continue 
+
+        # যদি সব কী-ই গুগল এন্ড থেকে ব্লক থাকে তবেই শুধু এই সেফটি নোটিশ দেখাবে
+        if not response_received:
+            if "429" in last_error or "RESOURCE_EXHAUSTED" in last_error:
+                st.error("⏱️ গুগলের ফ্রি কোটা সাময়িকভাবে সম্পূর্ণ শেষ। দয়া করে ১ মিনিট পর আবার সেন্ড করুন অথবা নতুন কী যোগ করুন।")
             else:
-                st.error(f"Error: {e}")
+                st.error(f"Error: {last_error}")
